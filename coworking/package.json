@@ -1,0 +1,42 @@
+{
+  "name": "a7_2-6870044021",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/2110503-69CP/503cp69-a7-2-6870044021#readme",
+  "bugs": {
+    "url": "https://github.com/2110503-69CP/503cp69-a7-2-6870044021/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2110503-69CP/503cp69-a7-2-6870044021.git"
+  },
+  "license": "ISC",
+  "author": "Chanapat",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@exortek/express-mongo-sanitize": "^3.0.1",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.7.1",
+    "express-xss-sanitizer": "^2.0.2",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4",
+    "newman": "^6.2.2",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

@@ -1,0 +1,178 @@
+//require model ของ Reservation มาด้วย
+const Reservation = require('../models/Reservation');
+const Room = require('../models/Room');
+
+//@desc Get all reservations
+//@route GET /api/v1/reservations
+//@access Public
+
+exports.getReservations = async(req,res,next)=>{
+    let query;
+    //General user can see only their reservations
+    if (req.user.role !== 'admin'){
+
+        query = Reservation.find({user:req.user.id}).populate({
+            //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
+            path:'room',
+            select:'name province tel'
+        });
+
+    }
+    else{
+        //Admin can see all reservations
+        if (req.params.roomlId){
+            console.log(req.params.roomId);
+            query = Reservation.find({room: req.params.roomId}).populate({
+             path:'room',
+             select:'name province tel'
+         });
+        }
+        else{
+             query = Reservation.find().populate({
+             path:'room',
+             select:'name province tel'
+         });
+        }
+
+    }
+    try{
+        //Execute query
+        const reservations = await query;
+
+        res.status(200).json({
+            success: true,
+            count: reservations.length,
+            data: reservations
+        });
+    }
+    catch(error){
+        console.log(error);
+        return res.status(500).json({success: false, message:"Cannot find reservation"});
+    }
+};
+
+
+//@desc Get single reservation
+//@route GET /api/v1/reservations/:id
+//@access Public
+
+exports.getReservation = async(req,res,next)=>{
+    try{
+        const reservation = await Reservation.findById(req.params.id).populate({
+            path: 'room',
+            select: 'name description tel'
+        });
+        if (!reservation){
+            return res.status(404).json({success:false,message:`No reservation with the id of ${req.params.id}`});
+
+        }
+        res.status(200).json({
+            success:true,
+            data:reservation
+        });
+    }
+    catch(error){
+        console.log(error);
+        return res.status(500).json({success:false, message:"Cannot find Reservation"});
+    }
+}
+
+//@desc Add reservation
+//@route POST /api/v1/rooms/:roomId/reservations/
+//@access Private
+
+exports.addReservation = async(req,res,next)=>{
+    try{
+        req.body.room=req.params.roomId;
+        const room = await Room.findById(req.params.roomId);
+        if (!room){
+            return res.status(404).json({success:false,message:`No room with the id of ${req.params.roomId}`});
+        }
+
+        //Reservation ownership
+        //Add user id to req.body
+        //User จะใส่ id อะไรมาก็แล้วแต่ จะเอา id มาจาก req.user.id อยู่ดี
+        req.body.user = req.user.id;
+        //Check for existed reservation
+        const existedReservation = await Reservation.find({user:req.user.id});
+        //If the user is not an admin, they can only create 3 reservations.
+        if (existedReservation.length >= 3 && req.user.role !== 'admin'){
+            return res.status(400).json({success:false,message:`The user with ID ${req.user.id} has already made 3 reservations`});
+        }
+
+
+        //สร้าง reservation โดยใช้ method create ของ model reservation
+        //โดยข้อมูลมาจาก request.body
+        const reservation = await Reservation.create(req.body);
+        res.status(201).json({
+            success: true,
+            data: reservation
+        });
+    }
+    catch(error){
+        console.log(error);
+        return res.status(500).json({success:false, message:"Cannot create Reservation"});     
+    }
+}
+
+
+//@desc Update reservation
+//@route PUT /api/v1/reservations/:id
+//@access Private
+
+exports.updateReservation = async(req,res,next)=>{
+    try{
+        //ดูก่อนว่าที่จะ update อยู่ในฐานข้อมูลมั้ย?
+        let reservation = await Reservation.findById(req.params.id);
+        if (!reservation){
+            return res.status(404).json({success:false, message:`No reservation with the id of ${req.params.id}`});
+
+        }
+        //Ownership
+        //Make sure user is the reservation owner or admin
+        if(reservation.user.toString() !== req.user.id && req.user.role !== 'admin'){
+            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to update this reservation`});
+        }
+
+        reservation = await Reservation.findByIdAndUpdate(req.params.id, req.body,{new: true, runValidators: true});
+        res.status(200).json({
+            success:true,
+            data:reservation
+        });
+    }
+    catch(error){
+        console.log(error);
+        return res.status(500).json({success:false, message:"Cannot update Reservation"});
+    }
+}
+
+//@desc Delete reservation
+//@route DELETE /api/v1/reservations/:id
+//@access Private
+
+exports.deleteReservation = async(req,res,next)=>{
+    try{
+        const reservation = await Reservation.findById(req.params.id);
+        if (!reservation){
+            return res.status(404).json({success:false, message:`No reservation with the id of ${req.params.id}`});
+
+        }
+
+        //Ownership
+        //Make sure user is the reservation owner or admin
+        if(reservation.user.toString() !== req.user.id && req.user.role !== 'admin'){
+            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to delete this reservation`});
+        }
+
+
+        await reservation.deleteOne();
+        res.status(200).json({
+            success:true,
+            data:{}
+        });
+    }
+    catch(error){
+        console.log(error);
+        return res.status(500).json({success:false, message:"Cannot delete Reservation"});
+    }
+}
