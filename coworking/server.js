@@ -51,7 +51,7 @@ const swaggerOptions = {
         info:{
             title: 'Library API',
             version: '1.0.0',
-            description: 'A simple Express VacQ API'
+            description: 'A simple Express Co-Working Space Reservation API'
         },
         servers: [
             {
@@ -67,6 +67,8 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
 const rooms = require('./routes/rooms');
 const reservations = require('./routes/reservations');
+const reviews = require('./routes/reviews');
+const notes = require('./routes/notes');
 const auth = require('./routes/auth');
 
 app.get('/', (req, res) => {
@@ -83,6 +85,10 @@ app.get('/', (req, res) => {
 app.use('/api/v1/rooms', rooms);
 
 app.use('/api/v1/reservations', reservations);
+
+app.use('/api/v1/reviews', reviews);
+
+app.use('/api/v1/notes', notes);
 
 //ถ้ามี request มาที่ path นี้ให้ส่งต่อไปไฟล์ auth
 app.use('/api/v1/auth', auth);
