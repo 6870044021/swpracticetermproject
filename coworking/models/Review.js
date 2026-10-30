@@ -4,10 +4,10 @@ const { deleteRoom } = require('../controllers/rooms');
 //สร้าง ReviewSchema โดยใช้ Schema ของ mongoose
 const ReviewSchema=new mongoose.Schema({
     //Review ประกอบด้วย field อะไรบ้าง?
-    reviewDate:{
-        type: Date,
-        required: true
-    },
+    // reviewDate:{
+    //     type: Date,
+    //     required: true
+    // },
     user:{
         type: mongoose.Schema.ObjectId,
         ref: 'User',
@@ -25,6 +25,11 @@ const ReviewSchema=new mongoose.Schema({
     createdAt:{
         type: Date,
         default: Date.now
+    },
+    anonymousReview:{
+        type:Boolean,
+        enum: [true, false],
+        default: true
     }
 });
 

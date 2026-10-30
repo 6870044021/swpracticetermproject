@@ -35,7 +35,7 @@ const UserSchema = new mongoose.Schema({
     userStatus:{
         type: String,
         enum: ['active', 'inactive', 'temporaryBan', 'permanentBan'],
-        default: 'user'
+        default: 'active'
     },
     banUntil:{
         type: Date

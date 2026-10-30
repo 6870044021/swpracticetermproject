@@ -1,13 +1,13 @@
 const mongoose =require('mongoose');
 const { deleteRoom } = require('../controllers/rooms');
 
-//สร้าง ReviewSchema โดยใช้ Schema ของ mongoose
+//สร้าง NoteSchema โดยใช้ Schema ของ mongoose
 const NoteSchema=new mongoose.Schema({
-    //Review ประกอบด้วย field อะไรบ้าง?
-    noteDate:{
-        type: Date,
-        required: true
-    },
+    //Note ประกอบด้วย field อะไรบ้าง?
+    // noteDate:{
+    //     type: Date,
+    //     required: true
+    // },
     user:{
         type: mongoose.Schema.ObjectId,
         ref: 'User',
