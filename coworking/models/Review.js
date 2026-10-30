@@ -1,0 +1,31 @@
+const mongoose =require('mongoose');
+const { deleteRoom } = require('../controllers/rooms');
+
+//สร้าง ReviewSchema โดยใช้ Schema ของ mongoose
+const ReviewSchema=new mongoose.Schema({
+    //Review ประกอบด้วย field อะไรบ้าง?
+    reviewDate:{
+        type: Date,
+        required: true
+    },
+    user:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    room:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Room',
+        required: true
+    },
+     reviewData:{
+        type: String,
+        required: true
+    },
+    createdAt:{
+        type: Date,
+        default: Date.now
+    }
+});
+
+module.exports=mongoose.model('Review', ReviewSchema);

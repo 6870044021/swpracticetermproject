@@ -32,6 +32,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         // required:[true,'Please add a password'],
     },
+    userStatus:{
+        type: String,
+        enum: ['active', 'inactive', 'temporaryBan', 'permanentBan'],
+        default: 'user'
+    },
+    banUntil:{
+        type: Date
+    },
     resetPasswordToken: String,
     resetPaawordExpire: Date,
     createdAt:{

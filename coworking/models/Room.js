@@ -49,4 +49,11 @@ RoomSchema.virtual('reservations',{
     justOne:false
 });
 
+RoomSchema.virtual('reviews',{
+    ref:'Review',
+    localField:'_id',
+    foreignField:'room',
+    justOne:false
+});
+
 module.exports = mongoose.model('Room', RoomSchema);

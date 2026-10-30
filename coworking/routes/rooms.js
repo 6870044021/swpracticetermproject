@@ -5,6 +5,7 @@ const {getRooms, getRoom, createRoom, updateRoom, deleteRoom} = require('../cont
 //ต้องเข้าถึงข้อมูลของ reservation ได้ผ่าน path ของ rooms ด้วย
 //Include other resource routers
 const reservationRouter = require('./reservations');
+const reviewRouter = require('./reviews');
 
 const router = express.Router();
 
@@ -13,6 +14,8 @@ const {protect, authorize} = require('../middleware/auth');
 //Re-route into other resource routers
 //ถ้ามี request มาจะอ้างอิงถึง path นี้
 router.use('/:roomId/reservations/', reservationRouter);
+
+router.use('/:roomId/reviews/', reviewRouter);
 
 //path ไหนที่ต้องการใช้ function protect ก็เติมเข้าไป
 //protect ทำก่อน หลังจากนั้น createRoom
