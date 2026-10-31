@@ -4,8 +4,8 @@ const Room = require('../models/Room');
 const Review = require('../models/Review');
 const Note = require('../models/Note');
 
-//@desc Get all reservations
-//@route GET /api/v1/reservations
+//@desc Get all notes
+//@route GET /api/v1/notes
 //@access Public
 
 exports.getNotes = async(req,res,next)=>{
@@ -15,14 +15,14 @@ exports.getNotes = async(req,res,next)=>{
             console.log(req.params.roomId);
             query = Note.find({room: req.params.roomId}).populate({
             path:'room',
-            select:'name province tel'
+            select:'name description address tel openCloseTimes'
          });
     }
     else{
             query = Note.find({room: req.params.roomId, user:req.user.id}).populate({
             //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
             path:'room',
-            select:'name province tel'
+            select:'name description address tel openCloseTimes'
         });
     }
     // //General user can see only their reviews
@@ -69,19 +69,23 @@ exports.getNotes = async(req,res,next)=>{
 };
 
 
-//@desc Get single reservation
-//@route GET /api/v1/reservations/:id
+//@desc Get single note
+//@route GET /api/v1/notes/:id
 //@access Public
 
 exports.getNote = async(req,res,next)=>{
     try{
         const note = await Note.findById(req.params.id).populate({
             path: 'room',
-            select: 'name description tel'
+            select: 'name description address tel openCloseTimes'
         });
         if (!note){
             return res.status(404).json({success:false,message:`No note with the id of ${req.params.id}`});
 
+        }
+        //User cannot get other user's notes even if they sedn the correct note id.
+        if(note.user.toString() !== req.user.id/* && req.user.role !== 'admin'*/){
+            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to get this note`});
         }
         res.status(200).json({
             success:true,
@@ -94,8 +98,8 @@ exports.getNote = async(req,res,next)=>{
     }
 }
 
-//@desc Add reservation
-//@route POST /api/v1/rooms/:roomId/reservations/
+//@desc Add note
+//@route POST /api/v1/rooms/:roomId/notes/
 //@access Private
 
 exports.addNote = async(req,res,next)=>{
@@ -133,8 +137,8 @@ exports.addNote = async(req,res,next)=>{
 }
 
 
-//@desc Update reservation
-//@route PUT /api/v1/reservations/:id
+//@desc Update note
+//@route PUT /api/v1/notes/:id
 //@access Private
 
 exports.updateNote = async(req,res,next)=>{
@@ -146,8 +150,8 @@ exports.updateNote = async(req,res,next)=>{
 
         }
         //Ownership
-        //Make sure user is the reservation owner or admin
-        if(note.user.toString() !== req.user.id && req.user.role !== 'admin'){
+        //Make sure user is the reservation owner
+        if(note.user.toString() !== req.user.id/* && req.user.role !== 'admin'*/){
             return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to update this note`});
         }
 
@@ -163,8 +167,8 @@ exports.updateNote = async(req,res,next)=>{
     }
 }
 
-//@desc Delete reservation
-//@route DELETE /api/v1/reservations/:id
+//@desc Delete note
+//@route DELETE /api/v1/notes/:id
 //@access Private
 
 exports.deleteNote = async(req,res,next)=>{
@@ -176,8 +180,8 @@ exports.deleteNote = async(req,res,next)=>{
         }
 
         //Ownership
-        //Make sure user is the reservation owner or admin
-        if(note.user.toString() !== req.user.id && req.user.role !== 'admin'){
+        //Make sure user is the note owner
+        if(note.user.toString() !== req.user.id/* && req.user.role !== 'admin'*/){
             return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to delete this note`});
         }
 

@@ -6,6 +6,7 @@ const {getRooms, getRoom, createRoom, updateRoom, deleteRoom} = require('../cont
 //Include other resource routers
 const reservationRouter = require('./reservations');
 const reviewRouter = require('./reviews');
+const noteRouter = require('./notes');
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ const {protect, authorize} = require('../middleware/auth');
 router.use('/:roomId/reservations/', reservationRouter);
 
 router.use('/:roomId/reviews/', reviewRouter);
+
+router.use('/:roomId/notes/', noteRouter);
 
 //path ไหนที่ต้องการใช้ function protect ก็เติมเข้าไป
 //protect ทำก่อน หลังจากนั้น createRoom
