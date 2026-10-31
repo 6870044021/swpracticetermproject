@@ -18,7 +18,7 @@ address:{
 },
 tel:{
     type: String,
-    // required:[true, 'Please add a telephone number']
+    required:[true, 'Please add a telephone number']
 },
 openCloseTimes:{
     type: String,

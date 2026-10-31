@@ -14,7 +14,7 @@ exports.getReservations = async(req,res,next)=>{
         query = Reservation.find({user:req.user.id}).populate({
             //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
             path:'room',
-            select:'name province tel'
+            select:'name description address tel'
         });
 
     }
@@ -24,13 +24,13 @@ exports.getReservations = async(req,res,next)=>{
             console.log(req.params.roomId);
             query = Reservation.find({room: req.params.roomId}).populate({
              path:'room',
-             select:'name province tel'
+             select:'name description address tel'
          });
         }
         else{
              query = Reservation.find().populate({
              path:'room',
-             select:'name province tel'
+             select:'name description address tel'
          });
         }
 
@@ -60,7 +60,7 @@ exports.getReservation = async(req,res,next)=>{
     try{
         const reservation = await Reservation.findById(req.params.id).populate({
             path: 'room',
-            select: 'name description tel'
+            select: 'name description address tel'
         });
         if (!reservation){
             return res.status(404).json({success:false,message:`No reservation with the id of ${req.params.id}`});
