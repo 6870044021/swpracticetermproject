@@ -3,38 +3,52 @@ const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
 const Review = require('../models/Review');
 
-//@desc Get all reservations
-//@route GET /api/v1/reservations
+//@desc Get all reviews
+//@route GET /api/v1/reviews
 //@access Public
 
 exports.getReviews = async(req,res,next)=>{
     let query;
-    //General user can see only their reviews
-    if (req.user.role !== 'admin'){
+    
+    req.body.room=req.params.roomId;
+    const room = await Room.findById(req.params.roomId);
+    //Room not specified, gets all reviews
+    if (!room){
+        query = Review.find().populate({
+             path:'room',
+             select:'name description address tel openCloseTimes'
+         });
+    // //General user can see only their reviews
+    // if (req.user.role !== 'admin'){
 
-        query = Review.find({user:req.user.id}).populate({
-            //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
-            path:'room',
-            select:'name province tel'
-        });
+    //     query = Review.find({user:req.user.id}).populate({
+    //         //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
+    //         path:'room',
+    //         select:'name description address tel openCloseTimes'
+    //     });
 
+    // }
+    // else{
+    //     //Admin can see all reviews
+    //     if (req.params.roomlId){
+    //         console.log(req.params.roomId);
+    //         query = Review.find({room: req.params.roomId}).populate({
+    //          path:'room',
+    //          select:'name description address tel openCloseTimes'
+    //      });
+    //     }
+    //     else{
+             
+    //     }
+
+    // }
     }
     else{
-        //Admin can see all reservations
-        if (req.params.roomlId){
-            console.log(req.params.roomId);
-            query = Review.find({room: req.params.roomId}).populate({
+        //Room specified. Gets reviews for that room.
+         query = Review.find({room: req.params.roomId}).populate({
              path:'room',
-             select:'name province tel'
-         });
-        }
-        else{
-             query = Review.find().populate({
-             path:'room',
-             select:'name province tel'
-         });
-        }
-
+             select:'name description address tel openCloseTimes'
+             });
     }
     try{
         //Execute query
@@ -51,6 +65,13 @@ exports.getReviews = async(req,res,next)=>{
         return res.status(500).json({success: false, message:"Cannot find review"});
     }
 };
+
+
+// //@desc Get all reviews for a room
+// //@route GET /api/v1/rooms/:roomId/reviews/
+// //@access Public
+
+// exports.getRoomReview = async(req,res,next)=>{}
 
 
 //@desc Get single reservation
@@ -79,7 +100,7 @@ exports.getReview = async(req,res,next)=>{
 }
 
 //@desc Add reservation
-//@route POST /api/v1/rooms/:roomId/reservations/
+//@route POST /api/v1/rooms/:roomId/reviews/
 //@access Private
 
 exports.addReview = async(req,res,next)=>{

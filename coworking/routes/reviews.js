@@ -11,7 +11,7 @@ const {protect,authorize} = require('../middleware/auth');
 
 //ต้อง login ก่อนถึงจะใช้ได้ = protect
 //ต้องเป็น role นี้ถึงจะเข้าได้ = authorize
-router.route('/').get(protect, getReviews).post(protect, authorize('admin','user'), addReview);
+router.route('/').get(protect, getReviews).post(protect, authorize('admin','user'), addReview)/*,get(protect, authorize('admin','user'), getRoomReviews)*/;
 //ไม่ protect
 //เช่น ถ้าเป็น path มี id แล้วเป็น method delete ให้ไปที่ deleteReservation
 router.route('/:id').get(protect, getReview).put(protect, authorize('admin','user'), updateReview).delete(protect, authorize('admin','user'), deleteReview);
