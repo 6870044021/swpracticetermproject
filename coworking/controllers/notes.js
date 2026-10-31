@@ -9,34 +9,49 @@ const Note = require('../models/Note');
 //@access Public
 
 exports.getNotes = async(req,res,next)=>{
+    //All users can only get their own notes. Even admins can't get other user's notes.
     let query;
-    //General user can see only their reviews
-    if (req.user.role !== 'admin'){
-
-        query = Note.find({user:req.user.id}).populate({
+    if (req.params.roomlId){
+            console.log(req.params.roomId);
+            query = Note.find({room: req.params.roomId}).populate({
+            path:'room',
+            select:'name province tel'
+         });
+    }
+    else{
+            query = Note.find({room: req.params.roomId, user:req.user.id}).populate({
             //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
             path:'room',
             select:'name province tel'
         });
-
     }
-    else{
-        //Admin can see all reservations
-        if (req.params.roomlId){
-            console.log(req.params.roomId);
-            query = Note.find({room: req.params.roomId}).populate({
-             path:'room',
-             select:'name province tel'
-         });
-        }
-        else{
-             query = Note.find().populate({
-             path:'room',
-             select:'name province tel'
-         });
-        }
+    // //General user can see only their reviews
+    // if (req.user.role !== 'admin'){
 
-    }
+    //     query = Note.find({user:req.user.id}).populate({
+    //         //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
+    //         path:'room',
+    //         select:'name province tel'
+    //     });
+
+    // }
+    // else{
+    //     //Admin can see all reservations
+    //     if (req.params.roomlId){
+    //         console.log(req.params.roomId);
+    //         query = Note.find({room: req.params.roomId}).populate({
+    //          path:'room',
+    //          select:'name province tel'
+    //      });
+    //     }
+    //     else{
+    //          query = Note.find().populate({
+    //          path:'room',
+    //          select:'name province tel'
+    //      });
+    //     }
+
+    // }
     try{
         //Execute query
         const notes = await query;

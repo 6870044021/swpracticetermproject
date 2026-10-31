@@ -6,31 +6,23 @@ name: {
     required: [true, 'Please add a name'],
     unique: true,
     trim: true,
-    maxLength:[50,'Name can not be more than 50 characters']
+    maxLength:[100,'Name can not be more than 100 characters']
+},
+description:{
+    type: String,
+    required:[true, 'Please add a description']
 },
 address:{
     type: String,
     required:[true, 'Please add an address']
 },
-district:{
-    type: String,
-    required:[true, 'Please add a district']
-},
-province:{
-    type: String,
-    required:[true, 'Please add a province']
-},
-postalcode:{
-    type: String,
-    required:[true, 'Please add a postalCode'],
-    maxLength:[5,'Postal Code can not be more than 50 digits']
-},
 tel:{
-    type: String
-},
-region:{
     type: String,
-    required:[true, 'Please add a region']
+    // required:[true, 'Please add a telephone number']
+},
+openCloseTimes:{
+    type: String,
+    required:[true, 'Please add open-close timese'],
 }
 },
 {
