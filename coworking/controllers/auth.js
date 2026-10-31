@@ -11,11 +11,11 @@ const User = require('../models/User');
 exports.register= async(req,res,next)=>{
     try{
         //นำค่าจาก request.body มาใช้ โดยแตกแต่ละ key value เป็นตัวแปร
-        const {name, email, password, role} = req.body;
+        const {name, email, password, tel, passwordHint, role} = req.body;
 
         //Create user. สร้าง object จาก user model
         const user = await User.create({
-            name, email, password, role
+            name, email, password, role, tel, passwordHint
         });
         //Create token
         sendTokenResponse(user,201,res);
