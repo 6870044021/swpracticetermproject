@@ -59,6 +59,15 @@ UserSchema.pre('save', async function(next){
     this.password = await bcrypt.hash(this.password, salt);
 });
 
+UserSchema.pre('findOneAndUpdate', async function(next){
+    
+    if(this._update.password){
+        const salt = await bcrypt.genSalt(10);
+        this._update.password = await bcrypt.hash(this._update.password, salt);
+    }
+    
+});
+
 //Sign and return
 
 //สร้าง method ให้ UserSchema ใส่ชื่อ method ที่ต้องการจะสร้าง (getSignedJwtToken)

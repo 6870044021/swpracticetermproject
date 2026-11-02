@@ -1,7 +1,7 @@
 //เดี๋ยวต้องใช้ method ต่างๆของ express
 const express = require('express');
 //require controller ของ authentication ด้วย
-const {register, login, getMe, logout} = require('../controllers/auth');
+const {register, login, getMe, logout, changePassword} = require('../controllers/auth');
 //ตัวแปร router จะเป็นตัวรับ request เข้ามา
 const router = express.Router();
 
@@ -16,5 +16,6 @@ router.post('/login', login);
 router.get('/me', protect, getMe);
 
 router.get('/logout', logout);
+router.post('/changePassword', protect, changePassword);
 //ยอมให้คนอื่นเรียกใช้ router
 module.exports = router;

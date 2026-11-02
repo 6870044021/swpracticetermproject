@@ -68,6 +68,48 @@ exports.login=async(req,res,next)=>{
     }
 }
 
+exports.changePassword=async(req,res,next)=>{
+    try{
+    //รับค่าจาก request.body เอามาแตกเป็น email กับ password
+    const {oldPassword,newPassword} = req.body;
+
+    //Validate email & password (เช็คค่าว่าง)
+    if (!oldPassword || !newPassword){
+        return res.status(400).json({success:false, message:'Please provide an email and password'});
+
+    }
+    //Check for user ค้นหาโดยใช้ email และ select password ที่ตรงกันมาด้วย
+    // const user = await User.findOne({email}).select('+password');
+    // const user = req.user
+    var user = await User.findById(req.user.id).select('+password');
+    //กรณีไม่เจอ user
+    if (!user){
+        return res.status(400).json({success:false, message:'Invalid user'});    
+    }
+    console.log('Printing user');
+    console.log(user);
+    console.log(oldPassword);
+    console.log(newPassword);
+    //Check if password matches
+    const isMatch = await user.matchPassword(oldPassword);
+
+    if (!isMatch){
+         return res.status(401).json({success:false, message:'Invalid credentials'});       
+    }
+
+    user = await User.findByIdAndUpdate(req.user.id, {password:newPassword},{new: true, runValidators: true});
+    //Create token
+
+    //ส่ง token กลับไปให้ client ผ่านทาง response.
+
+    sendTokenResponse(user,200,res);
+    }
+    catch(err){
+        console.log(err.stack); 
+        return res.status(401).json({success:false, msg:'Cannot convert old password or new password to string'});
+    }
+}
+
 //Get token from model, create cookie and send response
 const sendTokenResponse=(user, statusCode, res)=>{
     //Create token.
