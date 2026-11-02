@@ -51,3 +51,41 @@ exports.authorize=(...roles)=>{
         next();
     }
 }
+
+exports.checkStatus = async(req,res,next)=>{
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if(!token || token=='null'){
+        return res.status(401).json({success:false, message:'Not authorize to access this route'});
+    }
+
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await User.findById(decoded.id);
+        if (req.user.userStatus == 'permanentBan'){
+            return res.status(401).json({success:false, message:'You are permanently banned and not authorized.'});
+        }
+        else if (req.user.userStatus == 'temporaryBan'){
+            if (req.user.banUntil){
+                try{
+                    if (req.user.banUntil >= Date.now){
+                        return res.status(401).json({success:false, message:`You are banned until ${req.user.banUntil} and not authorized.`});
+                    }
+                }
+                catch(err){
+                   console.log(err.stack); 
+                }
+            }
+            
+        }
+        next();
+    }
+    catch(err){
+        console.log(err.stack);
+        return res.status(401).json({success:false, message:'Not authorize to access this route'});
+
+    }
+}
