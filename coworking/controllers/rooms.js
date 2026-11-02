@@ -32,7 +32,7 @@ exports.getRooms = async (req,res,next)=>{
 
         //สั่งให้ไปค้นหาข้อมูลตามเงื่อนไขที่มีใน query string แต่ยังไม่ execute
         //เติม reservations ของ room เข้าไปด้วย
-        query = Room.find(JSON.parse(queryStr)).populate('reservations');
+        query = Room.find(JSON.parse(queryStr)).populate('reservations').populate('notes');
 
         //Select fields
         if(req.query.select){
@@ -95,7 +95,7 @@ exports.getRooms = async (req,res,next)=>{
 
 exports.getRoom = async (req,res,next)=>{
     try{
-        const room = await Room.findById(req.params.id);
+        const room = await Room.findById(req.params.id).populate('reservations').populate('notes');
         if (!room){
             return res.status(400).json({success:false});
         }
