@@ -11,15 +11,15 @@ const Note = require('../models/Note');
 exports.getNotes = async(req,res,next)=>{
     //All users can only get their own notes. Even admins can't get other user's notes.
     let query;
-    if (req.params.roomlId){
+    if (req.params.roomId){
             console.log(req.params.roomId);
-            query = Note.find({room: req.params.roomId}).populate({
+            query = Note.find({room: req.params.roomId, user:req.user.id}).populate({
             path:'room',
             select:'name description address tel openCloseTimes'
          });
     }
     else{
-            query = Note.find({room: req.params.roomId, user:req.user.id}).populate({
+            query = Note.find({user:req.user.id}).populate({
             //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
             path:'room',
             select:'name description address tel openCloseTimes'

@@ -20,7 +20,7 @@ exports.getReservations = async(req,res,next)=>{
     }
     else{
         //Admin can see all reservations
-        if (req.params.roomlId){
+        if (req.params.roomId){
             console.log(req.params.roomId);
             query = Reservation.find({room: req.params.roomId}).populate({
              path:'room',

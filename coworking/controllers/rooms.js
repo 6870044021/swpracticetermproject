@@ -1,6 +1,7 @@
 const Room = require('../models/Room');
 
 const Reservation = require('../models/Reservation');
+const Note = require('../models/Note');
 
 
 
@@ -146,6 +147,7 @@ exports.deleteRoom = async (req,res,next)=>{
         
         //ลบ reservations ที่เป็นของ room นั้งก่อนแล้วค่อยลบ room
         await Reservation.deleteMany({room: req.params.id});
+        await Note.deleteMany({room: req.params.id});
         await Room.deleteOne({_id: req.params.id});
         res.status(200).json({success:true,data:{}});
     }
