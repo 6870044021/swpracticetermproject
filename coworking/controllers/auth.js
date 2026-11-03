@@ -110,6 +110,52 @@ exports.changePassword=async(req,res,next)=>{
     }
 }
 
+exports.suspendUser=async(req,res,next)=>{
+    console.log(req.user.role);
+    if (req.user.role != 'admin'){
+        return res.status(401).json({success:false, message:`Only admins can access this route.`});
+    }
+    let user = await User.findById(req.body.id);
+    if (!user){
+        return res.status(404).json({success:false, message:`No user with the id of ${req.params.id}`});
+    }
+    let banType = req.body.banType;
+    if (!banType){
+        return res.status(404).json({success:false, message:`Please specify a ban type`});
+    }
+    if (banType != 'temporaryBan' && banType != 'permanentBan' && banType != 'active'){
+        return res.status(404).json({success:false, message:`Please specify a correct ban type: temporaryBan or permanentBan`});
+    }
+    //Default ban is 1 day
+    let banFinish = Date.now() + 24*60*60*1000;
+    if (req.body.banUntil){
+        banFinish = req.body.banUntil;
+    }
+
+        user = await User.findByIdAndUpdate(req.body.id, {userStatus:banType, banUntil: banFinish},{new: true, runValidators: true});
+        if (banType == 'active'){
+            res.status(200).json({
+            success:true,
+            message:`User with the id of ${req.body.id} has been set to active. Any current ban is lifted.`
+        });
+        }
+        else if (banType == 'temporaryBan'){
+            res.status(200).json({
+            success:true,
+            message:`User with the id of ${req.body.id} has been temporary banned until ${banFinish}`
+        });
+        }
+        else{
+            res.status(200).json({
+            success:true,
+            message:`User with the id of ${req.body.id} has been permanently banned`
+        });
+        }
+        
+}
+
+
+
 //Get token from model, create cookie and send response
 const sendTokenResponse=(user, statusCode, res)=>{
     //Create token.
