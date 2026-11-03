@@ -127,11 +127,12 @@ exports.suspendUser=async(req,res,next)=>{
         return res.status(404).json({success:false, message:`Please specify a correct ban type: temporaryBan or permanentBan`});
     }
     //Default ban is 1 day
-    let banFinish = Date.now() + 24*60*60*1000;
-    if (req.body.banUntil){
-        banFinish = req.body.banUntil;
+    let banDays = 1
+    
+    if (req.body.banTime){
+        banDays = req.body.banTime;
     }
-
+    let banFinish = Date.now() + banDays*24*60*60*1000;
         user = await User.findByIdAndUpdate(req.body.id, {userStatus:banType, banUntil: banFinish},{new: true, runValidators: true});
         if (banType == 'active'){
             res.status(200).json({
@@ -142,13 +143,13 @@ exports.suspendUser=async(req,res,next)=>{
         else if (banType == 'temporaryBan'){
             res.status(200).json({
             success:true,
-            message:`User with the id of ${req.body.id} has been temporary banned until ${banFinish}`
+            message:`User with the id of ${req.body.id} has been temporary banned for ${banDays} days.`
         });
         }
         else{
             res.status(200).json({
             success:true,
-            message:`User with the id of ${req.body.id} has been permanently banned`
+            message:`User with the id of ${req.body.id} has been permanently banned.`
         });
         }
         
