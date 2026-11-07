@@ -12,6 +12,9 @@ exports.getReviews = async(req,res,next)=>{
     
     req.body.room=req.params.roomId;
     const room = await Room.findById(req.params.roomId);
+
+    const includeAnonymous = true;
+
     //Room not specified, gets all reviews
     if (!room){
         query = Review.find().populate({
@@ -53,7 +56,7 @@ exports.getReviews = async(req,res,next)=>{
     try{
         //Execute query
         const reviews = await query;
-
+        console.log(reviews);
         res.status(200).json({
             success: true,
             count: reviews.length,
@@ -116,10 +119,10 @@ exports.addReview = async(req,res,next)=>{
         //User จะใส่ id อะไรมาก็แล้วแต่ จะเอา id มาจาก req.user.id อยู่ดี
         req.body.user = req.user.id;
         //Check for existed reservation
-        const existedReview = await Review.find({user:req.user.id});
+        const existedReview = await Review.find({user:req.user.id, room:req.params.roomId});
         //If the user is not an admin, they can only create 3 reservations.
-        if (existedReview.length >= 3 && req.user.role !== 'admin'){
-            return res.status(400).json({success:false,message:`The user with ID ${req.user.id} has already made 3 reviews`});
+        if (existedReview.length >= 1){
+            return res.status(400).json({success:false,message:`The user with ID ${req.user.id} has already made a review for room ${req.params.roomId}. Please delete the old review first or edit it instead.`});
         }
 
 
