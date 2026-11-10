@@ -1,0 +1,15 @@
+tmp/
+**/node_modules/
+**/dist/
+**/.cache/
+**/config/config.env
+**/.env
+**/.env.local
+!**/.env.example
+*.log
+postman/VacQ_assignment7.1_7.2_10_original.postman_collection.json
+output/api/newman-results.json
+output/newman-results.json
+postman/*.private.postman_environment.json
+!coworking/package-lock.json
+!coworkingfrontend/package-lock.json
