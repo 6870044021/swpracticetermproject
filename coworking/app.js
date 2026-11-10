@@ -1,0 +1,43 @@
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { errorHandler, HttpError } = require('./utils/errors');
+const app = express();
+app.disable('x-powered-by');
+app.set('query parser', 'extended');
+app.use(helmet());
+app.use(cors({ origin: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(','), credentials: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(cookieParser());
+app.use(rateLimit({ windowMs: 10 * 60 * 1000, limit: Number(process.env.RATE_LIMIT_MAX) || 1000, standardHeaders: 'draft-8', legacyHeaders: false, skip: () => process.env.NODE_ENV === 'test', message: { success: false, message: 'Too many requests, please try again later' } }));
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: Number(process.env.AUTH_RATE_LIMIT_MAX) || 100, standardHeaders: 'draft-8', legacyHeaders: false, skip: () => process.env.NODE_ENV === 'test', message: { success: false, message: 'Too many authentication attempts' } });
+app.use(['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/passwordHint'], authLimiter);
+app.use((req, res, next) => {
+  const inspect = value => {
+    if (Array.isArray(value)) return value.every(inspect);
+    if (!value || typeof value !== 'object') return true;
+    return Object.entries(value).every(([key, child]) => !key.startsWith('$') && !key.includes('.') && !['__proto__', 'constructor', 'prototype'].includes(key) && inspect(child));
+  };
+  if (!inspect(req.body) || !inspect(req.query)) return next(new HttpError(400, 'Invalid request keys'));
+  next();
+});
+app.get('/', (req, res) => res.json({ success: true, data: { service: 'WoTA Co-working Space API' } }));
+app.get('/health', (req, res) => {
+  const connected = require('mongoose').connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({ success: connected, data: { database: connected ? 'connected' : 'disconnected' } });
+});
+app.use('/api/v1/auth', require('./routes/auth'));
+app.use('/api/v1/rooms', require('./routes/rooms'));
+app.use('/api/v1/reservations', require('./routes/reservations'));
+app.use('/api/v1/reviews', require('./routes/reviews'));
+app.use('/api/v1/notes', require('./routes/notes'));
+const legacy = require('./routes/legacy');
+app.use('/api/v1/hospitals', legacy.hospitals);
+app.use('/api/v1/appointments', legacy.appointments);
+app.use('/api-docs', require('swagger-ui-express').serve, require('swagger-ui-express').setup(require('./config/openapi')));
+app.get('/api-docs.json', (req, res) => res.json(require('./config/openapi')));
+app.use((req, res, next) => next(new HttpError(404, 'Resource not found')));
+app.use(errorHandler);
+module.exports = app;
