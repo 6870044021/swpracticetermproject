@@ -1,36 +1,10 @@
-const mongoose =require('mongoose');
-const { deleteRoom } = require('../controllers/rooms');
-
-//สร้าง ReviewSchema โดยใช้ Schema ของ mongoose
-const ReviewSchema=new mongoose.Schema({
-    //Review ประกอบด้วย field อะไรบ้าง?
-    // reviewDate:{
-    //     type: Date,
-    //     required: true
-    // },
-    user:{
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    room:{
-        type: mongoose.Schema.ObjectId,
-        ref: 'Room',
-        required: true
-    },
-     reviewData:{
-        type: String,
-        required: true
-    },
-    createdAt:{
-        type: Date,
-        default: Date.now
-    },
-    anonymousReview:{
-        type:Boolean,
-        enum: [true, false],
-        default: true
-    }
+const mongoose = require('mongoose');
+const ReviewSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, immutable: true },
+  room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true, immutable: true },
+  reviewData: { type: String, required: true, trim: true, maxlength: 5000 },
+  anonymousReview: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }, updatedAt: { type: Date, default: Date.now }
 });
-
-module.exports=mongoose.model('Review', ReviewSchema);
+ReviewSchema.index({ user: 1, room: 1 }, { unique: true });
+module.exports = mongoose.model('Review', ReviewSchema);
