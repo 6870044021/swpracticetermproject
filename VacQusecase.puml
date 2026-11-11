@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 @startuml WoTA_UseCases
 skinparam backgroundColor white
 title WoTA co-working space API - base requirements
@@ -33,4 +34,30 @@ note bottom of rooms
   Administrative room CRUD is preserved from the existing API.
   Additional requirements A1-A13 are documented separately.
 end note
+=======
+@startuml WoTA_UseCase
+' WoTA (Project #6 Co-working Space Reservation) - UML Use Case Diagram
+' Adapted from the course VacQ use case diagram: Hospital -> Co-working Space, Appointment -> Reservation.
+' Use cases are user goals, not steps: login/logout (FR2) is how a registered user authenticates
+' before using them, and create/view/edit/delete are grouped as "Manage Reservation" (FR3-FR9).
+' Extra credit requirements (A1-A13) are not drawn, as the term project instructions allow.
+left to right direction
+actor "User" as user
+rectangle "WoTA: Co-working Space Reservation System" as WoTASystem {
+    usecase "Register" as register
+    usecase "View\nCo-working Spaces" as viewSpaces
+    usecase "Manage\nReservation" as manageReservation
+    usecase "Manage\nCo-working Space" as manageSpace
+}
+
+user -- register
+user -- viewSpaces
+user -- manageReservation
+
+actor "Admin" as admin
+register -- admin
+manageSpace -- admin
+manageReservation -- admin
+
+>>>>>>> Stashed changes
 @enduml

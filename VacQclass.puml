@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 @startuml WoTA_API_Authentication
 title WoTA API UML profile - authentication (FR1-FR2)
 left to right direction
@@ -152,4 +153,274 @@ note bottom of reservation
   SuccessResponse: {success,data:{}}
   Errors: HTTP status and {success:false,error:String}.
 end note
+=======
+@startuml WoTA_Class_UMLProfile
+' WoTA - Class Diagram (UML Profile for REST API), same notation as the course VacQ diagram:
+' <<Application>> --<<Path>>--> <<Resource>> (operations: <<HTTP verb>> +controllerMethod(): ReturnType)
+' --<<use>>--> <<Representation>> (Mongoose model / MongoDB collection fields).
+' This diagram covers FR1-FR9. The second diagram below shows the full API including extra credits.
+left to right direction
+hide circle
+hide empty members
+skinparam classAttributeIconSize 0
+package "WoTA"{
+    class "<<Application>>\nWoTAService" as WoTAService{}
+
+    class "<<Resource>>\nRegister" as ResourceRegister{
+        <<POST>> +register():User
+    }
+
+    class "<<Resource>>\nLogin" as ResourceLogin{
+        <<POST>> +login():User
+    }
+
+    class "<<Resource>>\nLogout" as ResourceLogout{
+        <<GET>> +logout():void
+    }
+
+    class "<<Resource>>\nMe" as ResourceMe{
+        <<GET>> +getMe():User
+    }
+
+    class "<<Representation>>\nUser" as RepresentationUser{
+        -name
+        -tel
+        -email
+        -password
+        -role
+        -createdAt
+    }
+
+    class "<<Resource>>\nRooms" as ResourceRooms{
+        <<GET>> +getRooms():Room
+        <<POST>> +createRoom():Room
+    }
+
+    class "<<Resource>>\nRoom" as ResourceRoom{
+        <<GET>> +getRoom():Room
+        <<PUT>> +updateRoom():Room
+        <<DELETE>> +deleteRoom():void
+    }
+
+    class "<<Representation>>\nRoom" as RepresentationRoom{
+        -name
+        -description
+        -address
+        -tel
+        -openCloseTimes
+    }
+
+    class "<<Resource>>\nRoomReservations" as ResourceRoomReservations{
+        <<GET>> +getReservations():Reservation
+        <<POST>> +addReservation():Reservation
+    }
+
+    class "<<Resource>>\nReservations" as ResourceReservations{
+        <<GET>> +getReservations():Reservation
+    }
+
+    class "<<Resource>>\nReservation" as ResourceReservation{
+        <<GET>> +getReservation():Reservation
+        <<PUT>> +updateReservation():Reservation
+        <<DELETE>> +deleteReservation():void
+    }
+
+    class "<<Representation>>\nReservation" as RepresentationReservation{
+        -reservationDate
+        -user
+        -room
+        -createdAt
+    }
+}
+
+WoTAService ..> ResourceRegister:"/auth/register\n<<Path>>"
+WoTAService ..> ResourceLogin:"/auth/login\n<<Path>>"
+WoTAService ..> ResourceLogout:"/auth/logout\n<<Path>>"
+WoTAService ..> ResourceMe:"/auth/me\n<<Path>>"
+ResourceRegister ..> RepresentationUser:"<<use>>"
+ResourceLogin ..> RepresentationUser:"<<use>>"
+ResourceMe ..> RepresentationUser:"<<use>>"
+
+WoTAService ..> ResourceRooms:"/rooms\n<<Path>>"
+ResourceRooms ..> ResourceRoom:"/{roomId}\n<<Path>>"
+ResourceRoom ..> RepresentationRoom:"<<use>>"
+ResourceRoom ..> ResourceRoomReservations:"/reservations\n<<Path>>"
+
+WoTAService ..> ResourceReservations:"/reservations\n<<Path>>"
+ResourceReservations ..> ResourceReservation:"/{reservationId}\n<<Path>>"
+ResourceReservation ..> RepresentationReservation:"<<use>>"
+ResourceRoomReservations ..> RepresentationReservation:"<<use>>"
+
+@enduml
+
+@startuml WoTA_Class_UMLProfile_Full
+' WoTA - Class Diagram (UML Profile) of the whole API, including the extra credit resources (A1-A13).
+' Not required by the term project instructions; kept for the Q&A and for the team.
+left to right direction
+hide circle
+hide empty members
+skinparam classAttributeIconSize 0
+package "WoTA (full API)"{
+    class "<<Application>>\nWoTAService" as WoTAService{}
+
+    class "<<Resource>>\nRegister" as ResourceRegister{
+        <<POST>> +register():User
+    }
+    class "<<Resource>>\nLogin" as ResourceLogin{
+        <<POST>> +login():User
+    }
+    class "<<Resource>>\nLogout" as ResourceLogout{
+        <<GET>> +logout():void
+    }
+    class "<<Resource>>\nMe" as ResourceMe{
+        <<GET>> +getMe():User
+    }
+    class "<<Resource>>\nChangePassword" as ResourceChangePassword{
+        <<POST>> +changePassword():User
+    }
+    class "<<Resource>>\nPasswordHint" as ResourcePasswordHint{
+        <<POST>> +getPasswordHint():User
+        <<PUT>> +updatePasswordHint():User
+    }
+    class "<<Resource>>\nSuspend" as ResourceSuspend{
+        <<POST>> +suspendUser():User
+    }
+    class "<<Representation>>\nUser" as RepresentationUser{
+        -name
+        -tel
+        -email
+        -password
+        -passwordHint
+        -role
+        -userStatus
+        -banUntil
+        -createdAt
+    }
+
+    class "<<Resource>>\nRooms" as ResourceRooms{
+        <<GET>> +getRooms():Room
+        <<POST>> +createRoom():Room
+    }
+    class "<<Resource>>\nRoom" as ResourceRoom{
+        <<GET>> +getRoom():Room
+        <<PUT>> +updateRoom():Room
+        <<DELETE>> +deleteRoom():void
+    }
+    class "<<Resource>>\nRoomAvailability" as ResourceRoomAvailability{
+        <<GET>> +getRoomAvailability():Availability
+    }
+    class "<<Representation>>\nRoom" as RepresentationRoom{
+        -name
+        -description
+        -address
+        -tel
+        -openCloseTimes
+    }
+    class "<<Representation>>\nAvailability" as RepresentationAvailability{
+        -date
+        -openCloseTimes
+        -bookedSlots
+        -freeSlots
+    }
+
+    class "<<Resource>>\nRoomReservations" as ResourceRoomReservations{
+        <<GET>> +getReservations():Reservation
+        <<POST>> +addReservation():Reservation
+    }
+    class "<<Resource>>\nReservations" as ResourceReservations{
+        <<GET>> +getReservations():Reservation
+    }
+    class "<<Resource>>\nReservation" as ResourceReservation{
+        <<GET>> +getReservation():Reservation
+        <<PUT>> +updateReservation():Reservation
+        <<DELETE>> +deleteReservation():void
+    }
+    class "<<Representation>>\nReservation" as RepresentationReservation{
+        -reservationDate
+        -endDate
+        -user
+        -room
+        -createdAt
+    }
+
+    class "<<Resource>>\nRoomReviews" as ResourceRoomReviews{
+        <<GET>> +getReviews():Review
+        <<POST>> +addReview():Review
+    }
+    class "<<Resource>>\nReviews" as ResourceReviews{
+        <<GET>> +getReviews():Review
+    }
+    class "<<Resource>>\nReview" as ResourceReview{
+        <<GET>> +getReview():Review
+        <<PUT>> +updateReview():Review
+        <<DELETE>> +deleteReview():void
+    }
+    class "<<Representation>>\nReview" as RepresentationReview{
+        -reviewData
+        -anonymousReview
+        -user
+        -room
+        -createdAt
+        -/pastBookings
+    }
+
+    class "<<Resource>>\nRoomNotes" as ResourceRoomNotes{
+        <<GET>> +getNotes():Note
+        <<POST>> +addNote():Note
+    }
+    class "<<Resource>>\nNotes" as ResourceNotes{
+        <<GET>> +getNotes():Note
+    }
+    class "<<Resource>>\nNote" as ResourceNote{
+        <<GET>> +getNote():Note
+        <<PUT>> +updateNote():Note
+        <<DELETE>> +deleteNote():void
+    }
+    class "<<Representation>>\nNote" as RepresentationNote{
+        -noteData
+        -user
+        -room
+        -createdAt
+    }
+}
+
+WoTAService ..> ResourceRegister:"/auth/register\n<<Path>>"
+WoTAService ..> ResourceLogin:"/auth/login\n<<Path>>"
+WoTAService ..> ResourceLogout:"/auth/logout\n<<Path>>"
+WoTAService ..> ResourceMe:"/auth/me\n<<Path>>"
+WoTAService ..> ResourceChangePassword:"/auth/changePassword\n<<Path>>"
+WoTAService ..> ResourcePasswordHint:"/auth/passwordhint\n<<Path>>"
+WoTAService ..> ResourceSuspend:"/auth/suspend\n<<Path>>"
+ResourceRegister ..> RepresentationUser:"<<use>>"
+ResourceLogin ..> RepresentationUser:"<<use>>"
+ResourceMe ..> RepresentationUser:"<<use>>"
+ResourceChangePassword ..> RepresentationUser:"<<use>>"
+ResourcePasswordHint ..> RepresentationUser:"<<use>>"
+ResourceSuspend ..> RepresentationUser:"<<use>>"
+
+WoTAService ..> ResourceRooms:"/rooms\n<<Path>>"
+ResourceRooms ..> ResourceRoom:"/{roomId}\n<<Path>>"
+ResourceRoom ..> RepresentationRoom:"<<use>>"
+ResourceRoom ..> ResourceRoomAvailability:"/availability\n<<Path>>"
+ResourceRoomAvailability ..> RepresentationAvailability:"<<use>>"
+ResourceRoom ..> ResourceRoomReservations:"/reservations\n<<Path>>"
+ResourceRoom ..> ResourceRoomReviews:"/reviews\n<<Path>>"
+ResourceRoom ..> ResourceRoomNotes:"/notes\n<<Path>>"
+
+WoTAService ..> ResourceReservations:"/reservations\n<<Path>>"
+ResourceReservations ..> ResourceReservation:"/{reservationId}\n<<Path>>"
+ResourceReservation ..> RepresentationReservation:"<<use>>"
+ResourceRoomReservations ..> RepresentationReservation:"<<use>>"
+
+WoTAService ..> ResourceReviews:"/reviews\n<<Path>>"
+ResourceReviews ..> ResourceReview:"/{reviewId}\n<<Path>>"
+ResourceReview ..> RepresentationReview:"<<use>>"
+ResourceRoomReviews ..> RepresentationReview:"<<use>>"
+
+WoTAService ..> ResourceNotes:"/notes\n<<Path>>"
+ResourceNotes ..> ResourceNote:"/{noteId}\n<<Path>>"
+ResourceNote ..> RepresentationNote:"<<use>>"
+ResourceRoomNotes ..> RepresentationNote:"<<use>>"
+
+>>>>>>> Stashed changes
 @enduml
