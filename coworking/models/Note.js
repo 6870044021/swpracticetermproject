@@ -1,31 +1,8 @@
-const mongoose =require('mongoose');
-const { deleteRoom } = require('../controllers/rooms');
-
-//สร้าง NoteSchema โดยใช้ Schema ของ mongoose
-const NoteSchema=new mongoose.Schema({
-    //Note ประกอบด้วย field อะไรบ้าง?
-    // noteDate:{
-    //     type: Date,
-    //     required: true
-    // },
-    user:{
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    room:{
-        type: mongoose.Schema.ObjectId,
-        ref: 'Room',
-        required: true
-    },
-     noteData:{
-        type: String,
-        required: true
-    },
-    createdAt:{
-        type: Date,
-        default: Date.now
-    }
+const mongoose = require('mongoose');
+const NoteSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, immutable: true },
+  room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true, immutable: true },
+  noteData: { type: String, required: true, trim: true, maxlength: 5000 }, createdAt: { type: Date, default: Date.now }
 });
-
-module.exports=mongoose.model('Note', NoteSchema);
+NoteSchema.index({ user: 1, room: 1 });
+module.exports = mongoose.model('Note', NoteSchema);
