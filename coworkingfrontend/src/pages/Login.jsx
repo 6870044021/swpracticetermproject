@@ -17,13 +17,13 @@ function Login(){
         password:''
     });
 
-    const {name,email,password,password2} = formData;
+    const {email,password} = formData;
 
     const dispatch = useDispatch()
 
     const navigate = useNavigate()
 
-    const {user,isLoading,isError,isSuccess,message} = useSelector(state=>state.auth)
+    const {user,isError,isSuccess,message} = useSelector(state=>state.auth)
 
     useEffect(()=>{
         if(isError){
@@ -57,7 +57,7 @@ function Login(){
             <h1>
                 <FaSignInAlt /> Login
             </h1>
-            <p>Please login to get support</p>
+            <p>Please log in to WoTA</p>
         </section>
 
 

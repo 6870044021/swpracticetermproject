@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-11-08T20:36:49.340Z",
+  "database": "temporary MongoDB replica set",
+  "integration": {
+    "exitCode": 0,
+    "realMongo": true
+  },
+  "stats": {
+    "iterations": {
+      "total": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "items": {
+      "total": 74,
+      "pending": 0,
+      "failed": 0
+    },
+    "scripts": {
+      "total": 75,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequests": {
+      "total": 74,
+      "pending": 0,
+      "failed": 0
+    },
+    "requests": {
+      "total": 74,
+      "pending": 0,
+      "failed": 0
+    },
+    "tests": {
+      "total": 74,
+      "pending": 0,
+      "failed": 0
+    },
+    "assertions": {
+      "total": 234,
+      "pending": 0,
+      "failed": 0
+    },
+    "testScripts": {
+      "total": 74,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequestScripts": {
+      "total": 1,
+      "pending": 0,
+      "failed": 0
+    }
+  },
+  "performance": {
+    "scope": "Sequential Newman requests on this machine against one local temporary MongoDB replica-set member; this is not a production load test",
+    "requestCount": 74,
+    "averageMs": 182.13513513513513,
+    "p95Ms": 1275,
+    "maxMs": 1871,
+    "responsesWithinThreeSeconds": 74
+  },
+  "failures": []
+}

@@ -1,0 +1,155 @@
+@startuml WoTA_API_Authentication
+title WoTA API UML profile - authentication (FR1-FR2)
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+hide empty members
+package "WoTA REST API" {
+  class "WoTAService" as app <<Application>>
+  class "Registration" as registration <<Resource>> {
+    +register(): AuthResponse <<POST>>
+  }
+  class "Session" as session <<Resource>> {
+    +login(): AuthResponse <<POST>>
+  }
+  class "Current user" as me <<Resource>> {
+    +getMe(): UserResponse <<GET>>
+  }
+  class "Logout" as logout <<Resource>> {
+    +logout(): SuccessResponse <<POST>>
+    +logout(): SuccessResponse <<GET>>
+  }
+  class "RegisterInput" as registerInput <<Representation>> {
+    name: String
+    tel: String
+    email: String
+    password: String
+  }
+  class "LoginInput" as loginInput <<Representation>> {
+    email: String
+    password: String
+  }
+  class "User" as userRep <<Representation>> {
+    _id: ObjectId
+    name: String
+    tel: String
+    email: String
+    role: user | admin
+  }
+  class "AuthResponse" as authResponse <<Representation>> {
+    success: Boolean
+    token: String
+    user: User
+  }
+}
+app ..> registration : <<Path>>\n/api/v1/auth/register
+app ..> session : <<Path>>\n/api/v1/auth/login
+app ..> me : <<Path>>\n/api/v1/auth/me
+app ..> logout : <<Path>>\n/api/v1/auth/logout
+registration ..> registerInput : <<use>> input
+registration ..> authResponse : <<use>> output
+session ..> loginInput : <<use>> input
+session ..> authResponse : <<use>> output
+me ..> userRep : <<use>> output
+authResponse ..> userRep : <<use>>
+note bottom of logout
+  POST is the canonical logout method; GET is a compatibility alias.
+  Logout invalidates existing tokens and clears the auth cookie.
+  UserResponse: {success,data:User}
+  SuccessResponse: {success,data:{}}
+  AuthResponse retains top-level _id,name,email,role for compatibility.
+  Password hashes never appear in response representations.
+end note
+@enduml
+
+@startuml WoTA_API_Rooms
+title WoTA API UML profile - room catalogue (FR3 and preserved CRUD)
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+hide empty members
+package "WoTA REST API" {
+  class "WoTAService" as app <<Application>>
+  class "Rooms" as rooms <<Resource>> {
+    +getRooms(): RoomListResponse <<GET>>
+    +createRoom(): RoomResponse <<POST>>
+  }
+  class "Room" as room <<Resource>> {
+    +getRoom(): RoomResponse <<GET>>
+    +updateRoom(): RoomResponse <<PUT>>
+    +deleteRoom(): SuccessResponse <<DELETE>>
+  }
+  class "RoomInput / Room" as roomRep <<Representation>> {
+    _id: ObjectId [response only]
+    name: String
+    address: String
+    tel: String
+    openCloseTimes: String [HH:mm-HH:mm]
+    description: String
+    district: String
+    province: String
+    postalcode: String
+    region: String
+  }
+}
+app ..> rooms : <<Path>>\n/api/v1/rooms
+rooms ..> room : <<Path>>\n/{id}
+rooms ..> roomRep : <<use>>
+room ..> roomRep : <<use>>
+note bottom of rooms
+  Public GET supports allowlisted filtering, select, sort, page and limit.
+  POST, PUT and DELETE require authenticated role=admin.
+  RoomListResponse: {success,count,total,pagination,data:Room[]}
+  RoomResponse: {success,data:Room}
+  SuccessResponse: {success,data:{}}
+end note
+@enduml
+
+@startuml WoTA_API_Reservations
+title WoTA API UML profile - reservations (FR3-FR9)
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+hide empty members
+package "WoTA REST API" {
+  class "WoTAService" as app <<Application>>
+  class "Room reservations" as roomReservations <<Resource>> {
+    +getReservations(): ReservationListResponse <<GET>>
+    +addReservation(): ReservationResponse <<POST>>
+  }
+  class "Reservations" as reservations <<Resource>> {
+    +getReservations(): ReservationListResponse <<GET>>
+  }
+  class "Reservation" as reservation <<Resource>> {
+    +getReservation(): ReservationResponse <<GET>>
+    +updateReservation(): ReservationResponse <<PUT>>
+    +deleteReservation(): SuccessResponse <<DELETE>>
+  }
+  class "ReservationInput / Reservation" as reservationRep <<Representation>> {
+    _id: ObjectId [response only]
+    reservationDate: DateTime [ISO 8601 with zone]
+    endTime: DateTime [ISO 8601 with zone]
+    room: ObjectId [server controlled on create]
+    user: ObjectId [server controlled]
+    createdAt: DateTime [response only]
+  }
+}
+app ..> roomReservations : <<Path>>\n/api/v1/rooms/{roomId}/reservations
+app ..> reservations : <<Path>>\n/api/v1/reservations
+reservations ..> reservation : <<Path>>\n/{id}
+roomReservations ..> reservationRep : <<use>>
+reservations ..> reservationRep : <<use>>
+reservation ..> reservationRep : <<use>>
+note bottom of reservation
+  All methods require a valid bearer token or auth cookie.
+  User: create up to 3 active reservations and read/edit/delete own.
+  Admin: read/edit/delete any reservation.
+  ReservationResponse: {success,data:Reservation}
+  ReservationListResponse: {success,count,data:Reservation[]}
+  SuccessResponse: {success,data:{}}
+  Errors: HTTP status and {success:false,error:String}.
+end note
+@enduml

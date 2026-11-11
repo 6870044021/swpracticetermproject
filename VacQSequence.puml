@@ -1,0 +1,270 @@
+@startuml WoTA_Register
+skinparam backgroundColor white
+title Register account - FR1
+hide footbox
+autonumber
+actor Visitor as client
+participant ":app" as app <<Express>>
+participant ":authRouter" as router <<Router>>
+participant ":authController" as controller <<Controller>>
+participant "User" as user <<Mongoose model>>
+database "MongoDB users" as db
+client -> app : POST /api/v1/auth/register\n{name,tel,email,password}
+app -> router : match /api/v1/auth
+router -> controller : register(req,res)
+controller -> user : create(allowed registration fields)
+alt valid input
+  user -> user : validate; hash password
+  user -> db : insert user with role=user
+  alt unique email
+    db --> user : saved user
+    user --> controller : user
+    controller -> user : getSignedJwtToken()
+    user --> controller : token
+    controller --> client : 201 {success,token,user}
+  else duplicate email
+    db --> user : duplicate-key error
+    user --> controller : error
+    controller --> client : 409 {success:false,error}
+  end
+else invalid input
+  user --> controller : validation error
+  controller --> client : 400 {success:false,error}
+end
+@enduml
+
+@startuml WoTA_Login
+skinparam backgroundColor white
+title Sign in - FR2
+hide footbox
+autonumber
+actor "Registered user / Administrator" as client
+participant ":app" as app <<Express>>
+participant ":authRouter" as router <<Router>>
+participant ":authController" as controller <<Controller>>
+participant "User" as user <<Mongoose model>>
+database "MongoDB users" as db
+client -> app : POST /api/v1/auth/login\n{email,password}
+app -> router : match /api/v1/auth
+router -> controller : login(req,res)
+controller -> user : findOne({email}).select('+password')
+user -> db : find user
+db --> user : user or null
+user --> controller : user or null
+opt user exists
+  controller -> user : matchPassword(password)
+  user --> controller : matched: Boolean
+end
+alt user exists and matched=true
+  controller -> user : getSignedJwtToken()
+  user --> controller : token
+  controller --> client : 200 {success,token,user}
+else invalid credentials
+  controller --> client : 401 {success:false,error}
+end
+@enduml
+
+@startuml WoTA_Logout
+skinparam backgroundColor white
+title Sign out - FR2
+hide footbox
+autonumber
+actor "Registered user / Administrator" as client
+participant ":app" as app <<Express>>
+participant ":authRouter" as router <<Router>>
+participant ":protect" as auth <<Middleware>>
+participant ":authController" as controller <<Controller>>
+participant "User" as user <<Mongoose model>>
+database "MongoDB users" as db
+client -> app : POST /api/v1/auth/logout\nAuthorization: Bearer token
+app -> router : match /api/v1/auth
+router -> auth : protect(req,res,next)
+auth -> user : validate token and load user
+user -> db : find user
+db --> user : user
+user --> auth : user
+auth --> router : req.user
+router -> controller : logout(req,res)
+controller -> user : updateOne({_id:user.id}, {$inc:{tokenVersion:1}})
+user -> db : update token version
+db --> user : acknowledged
+user --> controller : updated
+controller --> client : 200 {success:true,data:{}}\nclear auth cookie
+note over client,controller
+  GET /api/v1/auth/logout remains a compatibility alias.
+end note
+@enduml
+
+@startuml WoTA_BrowseRooms
+skinparam backgroundColor white
+title Browse co-working rooms - FR3
+hide footbox
+autonumber
+actor "Visitor / Registered user / Administrator" as client
+participant ":app" as app <<Express>>
+participant ":roomsRouter" as router <<Router>>
+participant ":roomsController" as controller <<Controller>>
+participant "Room" as room <<Mongoose model>>
+database "MongoDB rooms" as db
+client -> app : GET /api/v1/rooms\nor GET /api/v1/rooms/{id}
+app -> router : match /api/v1/rooms
+alt list rooms
+  router -> controller : getRooms(req,res)
+  controller -> room : find(allowlisted filters); countDocuments()
+  room -> db : query and count
+  db --> room : rooms and total
+  room --> controller : rooms and total
+  controller --> client : 200 {success,count,total,pagination,data:Room[]}
+else read one room
+  router -> controller : getRoom(req,res)
+  controller -> room : findById(id)
+  room -> db : find room
+  db --> room : room or null
+  room --> controller : room or null
+  controller --> client : 200 RoomResponse / 404 ErrorResponse
+end
+note over room,db
+  Room information includes name, address, tel and openCloseTimes.
+end note
+@enduml
+
+@startuml WoTA_ManageReservations
+skinparam backgroundColor white
+title Manage reservations - FR3-FR9
+hide footbox
+autonumber
+actor "Registered user / Administrator" as client
+participant ":app" as app <<Express>>
+participant ":reservationsRouter" as router <<Router>>
+participant ":protect" as auth <<Middleware>>
+participant ":reservationsController" as controller <<Controller>>
+participant ":reservationService" as service <<Service>>
+participant "User / Room / Reservation" as models <<Mongoose models>>
+database "MongoDB" as db
+client -> app : reservation HTTP request\nAuthorization: Bearer token
+app -> router : /api/v1/reservations\nor /api/v1/rooms/{roomId}/reservations
+router -> auth : protect(req,res,next)
+auth -> auth : jwt.verify(token,secret)
+opt valid JWT signature and expiry
+  auth -> models : User.findById(decoded.id).select('+tokenVersion')
+  models -> db : find user
+  db --> models : user or null
+  models --> auth : user or null
+end
+alt invalid / expired / revoked token or missing user
+  auth --> client : 401 ErrorResponse
+else authenticated
+  auth --> router : req.user
+  alt POST /rooms/{roomId}/reservations (FR3)
+    router -> controller : addReservation(req,res)
+    controller -> service : createReservation(user,roomId,body)
+    service -> models : load Room; count active reservations
+    models -> db : query room and owner's reservations
+    db --> models : room and count
+    models --> service : room and count
+    alt room exists and active count < 3
+      service -> models : create({user:user.id,room,dates})
+      models -> db : insert reservation
+      db --> models : reservation
+      models --> service : reservation
+      service --> controller : reservation
+      controller --> client : 201 {success:true,data:reservation}
+    else missing room / limit reached
+      service --> controller : 404 / 400 domain error
+      controller --> client : ErrorResponse
+    end
+  else GET collection or item (FR4, FR7)
+    router -> controller : getReservations() / getReservation()
+    controller -> models : user: filter by owner\nadmin: no owner restriction
+    models -> db : find / findById and ownership check
+    db --> models : reservations
+    models --> controller : reservations
+    controller --> client : 200 list/item response\nor 403 / 404 ErrorResponse
+  else PUT /reservations/{id} (FR5, FR8)
+    router -> controller : updateReservation(req,res)
+    controller -> service : updateReservation(user,id,body)
+    service -> models : load reservation; authorize owner or admin
+    models -> db : find reservation
+    db --> models : reservation or null
+    models --> service : reservation or null
+    alt owner or admin and valid update
+      service -> models : update allowed fields
+      models -> db : update reservation
+      db --> models : saved reservation
+      models --> service : saved reservation
+      service --> controller : saved reservation
+      controller --> client : 200 {success:true,data:reservation}
+    else forbidden / missing / invalid
+      service --> controller : 403 / 404 / 400 domain error
+      controller --> client : ErrorResponse
+    end
+  else DELETE /reservations/{id} (FR6, FR9)
+    router -> controller : deleteReservation(req,res)
+    controller -> service : deleteReservation(user,id)
+    service -> models : load reservation; authorize owner or admin
+    models -> db : find reservation
+    db --> models : reservation or null
+    models --> service : reservation or null
+    alt owner or admin
+      service -> models : deleteOne({_id:id})
+      models -> db : delete reservation
+      db --> models : acknowledged
+      models --> service : deleted
+      service --> controller : deleted
+      controller --> client : 200 {success:true,data:{}}
+    else forbidden / missing
+      service --> controller : 403 / 404 domain error
+      controller --> client : ErrorResponse
+    end
+  end
+end
+note over controller,db
+  Base-requirement view: the implementation also runs A4/A6/A7/A11
+  validation and MongoDB transaction locks in the reservation service.
+  Additional-requirement internals are outside this diagram's scope.
+end note
+@enduml
+
+@startuml WoTA_ManageRooms
+skinparam backgroundColor white
+title Manage room catalogue - preserved Assignment 7 API
+hide footbox
+autonumber
+actor Administrator as client
+participant ":app" as app <<Express>>
+participant ":roomsRouter" as router <<Router>>
+participant ":protect / authorize" as auth <<Middleware>>
+participant ":roomsController" as controller <<Controller>>
+participant "Room" as room <<Mongoose model>>
+database "MongoDB rooms" as db
+client -> app : POST /api/v1/rooms\nPUT or DELETE /api/v1/rooms/{id}
+app -> router : match /api/v1/rooms
+router -> auth : protect; authorize('admin')
+alt valid administrator
+  auth --> router : req.user
+  alt create room
+    router -> controller : createRoom(req,res)
+    controller -> room : create(allowed room fields)
+    room -> db : insert room
+    db --> room : room
+    room --> controller : room
+    controller --> client : 201 RoomResponse
+  else update room
+    router -> controller : updateRoom(req,res)
+    controller -> room : findById; set allowed fields; save()
+    room -> db : update room
+    db --> room : room
+    room --> controller : room
+    controller --> client : 200 RoomResponse / 404 ErrorResponse
+  else delete room
+    router -> controller : deleteRoom(req,res)
+    controller -> room : findById; deleteOne in transaction
+    room -> db : delete room and dependent data atomically
+    db --> room : acknowledged
+    room --> controller : deleted
+    controller --> client : 200 SuccessResponse / 404 ErrorResponse
+  end
+else unauthenticated or not admin
+  auth --> client : 401 / 403 ErrorResponse
+end
+@enduml
