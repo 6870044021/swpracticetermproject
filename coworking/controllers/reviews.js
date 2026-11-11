@@ -1,203 +1,95 @@
-//require model ของ Reservation มาด้วย
+const Review = require('../models/Review');
 const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
-const Review = require('../models/Review');
+const mongoose = require('mongoose');
+const { HttpError, pick } = require('../utils/errors');
+const { endExpression } = require('../services/reservations');
+const { withBookingTransaction } = require('../services/bookingTransaction');
+const { isSuspended } = require('../utils/booking');
+const User = require('../models/User');
 
-//@desc Get all reviews
-//@route GET /api/v1/reviews
-//@access Public
-
-exports.getReviews = async(req,res,next)=>{
-    let query;
-    
-    req.body.room=req.params.roomId;
-    const room = await Room.findById(req.params.roomId);
-
-    const includeAnonymous = true;
-
-    //Room not specified, gets all reviews
-    if (!room){
-        query = Review.find().populate({
-             path:'room',
-             select:'name description address tel openCloseTimes'
-         });
-    // //General user can see only their reviews
-    // if (req.user.role !== 'admin'){
-
-    //     query = Review.find({user:req.user.id}).populate({
-    //         //ให้ populate อะไร: room, เลือก fields ไหนมาบ้าง: name, province, tel
-    //         path:'room',
-    //         select:'name description address tel openCloseTimes'
-    //     });
-
-    // }
-    // else{
-    //     //Admin can see all reviews
-    //     if (req.params.roomlId){
-    //         console.log(req.params.roomId);
-    //         query = Review.find({room: req.params.roomId}).populate({
-    //          path:'room',
-    //          select:'name description address tel openCloseTimes'
-    //      });
-    //     }
-    //     else{
-             
-    //     }
-
-    // }
-    }
-    else{
-        //Room specified. Gets reviews for that room.
-         query = Review.find({room: req.params.roomId}).populate({
-             path:'room',
-             select:'name description address tel openCloseTimes'
-             });
-    }
-    try{
-        //Execute query
-        const reviews = await query;
-        console.log(reviews);
-        res.status(200).json({
-            success: true,
-            count: reviews.length,
-            data: reviews
-        });
-    }
-    catch(error){
-        console.log(error);
-        return res.status(500).json({success: false, message:"Cannot find review"});
-    }
+const validateReview = body => {
+  const data = pick(body, ['reviewData', 'anonymousReview']);
+  if (data.reviewData !== undefined && typeof data.reviewData !== 'string') throw new HttpError(400, 'reviewData must be a string');
+  if (data.anonymousReview !== undefined && typeof data.anonymousReview !== 'boolean') throw new HttpError(400, 'anonymousReview must be a boolean');
+  return data;
 };
-
-
-// //@desc Get all reviews for a room
-// //@route GET /api/v1/rooms/:roomId/reviews/
-// //@access Public
-
-// exports.getRoomReview = async(req,res,next)=>{}
-
-
-//@desc Get single reservation
-//@route GET /api/v1/reservations/:id
-//@access Public
-
-exports.getReview = async(req,res,next)=>{
-    try{
-        const review = await Review.findById(req.params.id).populate({
-            path: 'room',
-            select: 'name description tel'
-        });
-        if (!review){
-            return res.status(404).json({success:false,message:`No review with the id of ${req.params.id}`});
-
-        }
-        res.status(200).json({
-            success:true,
-            data:review
-        });
-    }
-    catch(error){
-        console.log(error);
-        return res.status(500).json({success:false, message:"Cannot find Review"});
-    }
+async function serializeReviews(reviews, viewer) {
+  const userIds = [...new Set(reviews.map(review => String(review.user?._id || review.user)))].filter(id => mongoose.isValidObjectId(id));
+  const counts = await Reservation.aggregate([
+    { $match: { user: { $in: userIds.map(id => new mongoose.Types.ObjectId(id)) }, $expr: { $lte: [endExpression, new Date()] } } },
+    { $group: { _id: '$user', count: { $sum: 1 } } }
+  ]);
+  const byUser = new Map(counts.map(row => [String(row._id), row.count]));
+  return reviews.map(review => {
+    const data = review.toObject ? review.toObject() : { ...review };
+    const authorId = String(data.user?._id || data.user);
+    data.pastBookings = byUser.get(authorId) || 0;
+    data.canEdit = authorId === String(viewer._id) || viewer.role === 'admin';
+    if (data.anonymousReview) delete data.user;
+    return data;
+  });
 }
-
-//@desc Add reservation
-//@route POST /api/v1/rooms/:roomId/reviews/
-//@access Private
-
-exports.addReview = async(req,res,next)=>{
-    try{
-        req.body.room=req.params.roomId;
-        const room = await Room.findById(req.params.roomId);
-        if (!room){
-            return res.status(404).json({success:false,message:`No room with the id of ${req.params.roomId}`});
-        }
-
-        //Reservation ownership
-        //Add user id to req.body
-        //User จะใส่ id อะไรมาก็แล้วแต่ จะเอา id มาจาก req.user.id อยู่ดี
-        req.body.user = req.user.id;
-        //Check for existed reservation
-        const existedReview = await Review.find({user:req.user.id, room:req.params.roomId});
-        //If the user is not an admin, they can only create 3 reservations.
-        if (existedReview.length >= 1){
-            return res.status(400).json({success:false,message:`The user with ID ${req.user.id} has already made a review for room ${req.params.roomId}. Please delete the old review first or edit it instead.`});
-        }
-
-
-        //สร้าง reservation โดยใช้ method create ของ model reservation
-        //โดยข้อมูลมาจาก request.body
-        const review = await Review.create(req.body);
-        res.status(201).json({
-            success: true,
-            data: review
-        });
-    }
-    catch(error){
-        console.log(error);
-        return res.status(500).json({success:false, message:"Cannot create Review"});     
-    }
-}
-
-
-//@desc Update reservation
-//@route PUT /api/v1/reservations/:id
-//@access Private
-
-exports.updateReview = async(req,res,next)=>{
-    try{
-        //ดูก่อนว่าที่จะ update อยู่ในฐานข้อมูลมั้ย?
-        let review = await Review.findById(req.params.id);
-        if (!review){
-            return res.status(404).json({success:false, message:`No review with the id of ${req.params.id}`});
-
-        }
-        //Ownership
-        //Make sure user is the reservation owner or admin
-        if(review.user.toString() !== req.user.id && req.user.role !== 'admin'){
-            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to update this review`});
-        }
-
-        review = await Review.findByIdAndUpdate(req.params.id, req.body,{new: true, runValidators: true});
-        res.status(200).json({
-            success:true,
-            data:review
-        });
-    }
-    catch(error){
-        console.log(error);
-        return res.status(500).json({success:false, message:"Cannot update Review"});
-    }
-}
-
-//@desc Delete reservation
-//@route DELETE /api/v1/reservations/:id
-//@access Private
-
-exports.deleteReview = async(req,res,next)=>{
-    try{
-        const review = await Review.findById(req.params.id);
-        if (!review){
-            return res.status(404).json({success:false, message:`No review with the id of ${req.params.id}`});
-
-        }
-
-        //Ownership
-        //Make sure user is the reservation owner or admin
-        if(review.user.toString() !== req.user.id && req.user.role !== 'admin'){
-            return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to delete this review`});
-        }
-
-
-        await review.deleteOne();
-        res.status(200).json({
-            success:true,
-            data:{}
-        });
-    }
-    catch(error){
-        console.log(error);
-        return res.status(500).json({success:false, message:"Cannot delete Review"});
-    }
-}
+const load = async req => {
+  const review = await Review.findById(req.params.id);
+  if (!review || (req.params.roomId && String(review.room) !== req.params.roomId)) throw new HttpError(404, 'Review not found');
+  return review;
+};
+const assertOwner = (review, user) => {
+  if (String(review.user) !== String(user._id) && user.role !== 'admin') throw new HttpError(403, 'You cannot change another user\'s review');
+};
+exports.getReviews = async (req, res) => {
+  const filter = {};
+  if (req.params.roomId) {
+    if (!(await Room.exists({ _id: req.params.roomId }))) throw new HttpError(404, 'Room not found');
+    filter.room = req.params.roomId;
+  }
+  if (req.query.includeAnonymous !== undefined) {
+    if (!['true', 'false'].includes(req.query.includeAnonymous)) throw new HttpError(400, 'includeAnonymous must be true or false');
+    if (req.query.includeAnonymous === 'false') filter.anonymousReview = { $ne: true };
+  }
+  const reviews = await Review.find(filter).populate('room', 'name address tel openCloseTimes').populate('user', 'name').sort('-createdAt');
+  const data = await serializeReviews(reviews, req.user);
+  res.status(200).json({ success: true, count: data.length, data });
+};
+exports.getReview = async (req, res) => {
+  const review = await load(req);
+  await review.populate([{ path: 'room', select: 'name address tel openCloseTimes' }, { path: 'user', select: 'name' }]);
+  res.status(200).json({ success: true, data: (await serializeReviews([review], req.user))[0] });
+};
+exports.addReview = async (req, res) => {
+  const input = validateReview(req.body);
+  if (!req.params.roomId) throw new HttpError(400, 'Choose a room with /rooms/:roomId/reviews');
+  const review = await withBookingTransaction([`room:${req.params.roomId}`, `user:${req.user._id}`], async session => {
+    const user = await User.findById(req.user._id).session(session);
+    if (!user || isSuspended(user)) throw new HttpError(403, 'Suspended accounts cannot leave reviews');
+    if (!(await Room.exists({ _id: req.params.roomId }).session(session))) throw new HttpError(404, 'Room not found');
+    const [created] = await Review.create([{ ...input, user: req.user._id, room: req.params.roomId }], { session });
+    return created;
+  });
+  await review.populate('user', 'name');
+  res.status(201).json({ success: true, data: (await serializeReviews([review], req.user))[0] });
+};
+exports.updateReview = async (req, res) => {
+  const previous = await load(req);
+  assertOwner(previous, req.user);
+  const input = validateReview(req.body);
+  const review = await withBookingTransaction([`room:${previous.room}`, `user:${req.user._id}`], async session => {
+    const user = await User.findById(req.user._id).session(session);
+    if (!user || isSuspended(user)) throw new HttpError(403, 'Suspended accounts cannot leave reviews');
+    const current = await Review.findById(req.params.id).session(session);
+    if (!current) throw new HttpError(404, 'Review not found');
+    assertOwner(current, req.user);
+    current.set({ ...input, updatedAt: new Date() });
+    await current.save({ session });
+    return current;
+  });
+  await review.populate('user', 'name');
+  res.status(200).json({ success: true, data: (await serializeReviews([review], req.user))[0] });
+};
+exports.deleteReview = async (req, res) => {
+  const review = await load(req);
+  assertOwner(review, req.user);
+  await review.deleteOne();
+  res.status(200).json({ success: true, data: {} });
+};
