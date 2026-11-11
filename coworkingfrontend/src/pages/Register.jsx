@@ -13,19 +13,19 @@ import {register, reset} from '../features/auth/authSlice'
 function Register(){
     const [formData, setFormData]=useState({
         name:'',
-        tel:'',
         email:'',
         password:'',
-        password2:''
+        password2:'',
+        role:'user'
     });
 
-    const {name,tel,email,password,password2} = formData;
+    const {name,email,password,password2,role} = formData;
 
     const dispatch = useDispatch()
 
     const navigate = useNavigate()
 
-    const {user,isError, isSuccess, message} = useSelector((state)=>{
+    const {user,isLoading, isError, isSuccess, message} = useSelector((state)=>{
         return state.auth
     })
 
@@ -59,9 +59,9 @@ function Register(){
         else{
             const userData = {
                 name,
-                tel,
                 email,
-                password
+                password,
+                role
             }
             dispatch(register(userData))
         }
@@ -88,7 +88,7 @@ function Register(){
                 </div>
 
                 <div className = "form-group">
-                    <input type="password" className='form-control' id='password' name='password' value={password} onChange={onChange} placeholder='8+ characters, uppercase, lowercase and number' minLength={8} required/>
+                    <input type="password" className='form-control' id='password' name='password' value={password} onChange={onChange} placeholder='Enter Your password' required/>
 
                 </div>
 
@@ -98,7 +98,7 @@ function Register(){
                 </div>
 
                 <div className = "form-group">
-                    <input type="text" className='form-control' id='tel' name='tel' value={tel} onChange={onChange} placeholder='Enter Your telephone number' required />
+                    <input type="text" className='form-control' id='role' name='role' value={role} onChange={onChange} placeholder='Enter Your Role' required />
                 </div>
 
                 <div className='form-group'>

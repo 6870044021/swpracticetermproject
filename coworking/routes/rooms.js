@@ -1,16 +1,4 @@
 const express = require('express');
-<<<<<<< Updated upstream
-const c = require('../controllers/rooms');
-const { protect, authorize } = require('../middleware/auth');
-const { asyncHandler } = require('../utils/errors');
-const router = express.Router();
-router.use('/:roomId/reservations', require('./reservations'));
-router.use('/:roomId/reviews', require('./reviews'));
-router.use('/:roomId/notes', require('./notes'));
-router.route('/').get(asyncHandler(c.getRooms)).post(protect, authorize('admin'), asyncHandler(c.createRoom));
-router.route('/:id').get(asyncHandler(c.getRoom)).put(protect, authorize('admin'), asyncHandler(c.updateRoom)).delete(protect, authorize('admin'), asyncHandler(c.deleteRoom));
-module.exports = router;
-=======
 
 const {
     getRooms,
@@ -231,4 +219,3 @@ module.exports = router;
  *       404:
  *         description: The co-working space was not found
  */
->>>>>>> Stashed changes

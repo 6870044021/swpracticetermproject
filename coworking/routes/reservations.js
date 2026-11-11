@@ -1,14 +1,4 @@
 const express = require('express');
-<<<<<<< Updated upstream
-const c = require('../controllers/reservations');
-const { protect, checkStatus } = require('../middleware/auth');
-const { asyncHandler } = require('../utils/errors');
-const router = express.Router({ mergeParams: true });
-router.use(protect);
-router.route('/').get(asyncHandler(c.getReservations)).post(checkStatus, asyncHandler(c.addReservation));
-router.route('/:id').get(asyncHandler(c.getReservation)).put(checkStatus, asyncHandler(c.updateReservation)).delete(asyncHandler(c.deleteReservation));
-module.exports = router;
-=======
 
 //ดึง method getReservations และ อื่น ๆ มาใช้จาก controllers ของ reservations
 const {
@@ -215,4 +205,3 @@ module.exports = router;
  *       403:
  *         description: Less than 1 hour before the reservation begins
  */
->>>>>>> Stashed changes

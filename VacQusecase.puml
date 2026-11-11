@@ -1,40 +1,3 @@
-<<<<<<< Updated upstream
-@startuml WoTA_UseCases
-skinparam backgroundColor white
-title WoTA co-working space API - base requirements
-left to right direction
-skinparam shadowing false
-skinparam packageStyle rectangle
-actor "Visitor" as visitor
-actor "Registered user" as user
-actor "Administrator" as admin
-admin --|> user
-rectangle "WoTA REST API" {
-  usecase "Register account\nFR1" as register
-  usecase "Sign in\nFR2" as login
-  usecase "Sign out\nFR2" as logout
-  usecase "Browse co-working rooms\nFR3" as browse
-  usecase "Manage reservations\nFR3-FR9" as reservations
-  usecase "Manage room catalogue\nPreserved Assignment 7 API" as rooms
-}
-visitor -- register
-visitor -- login
-visitor -- browse
-user -- logout
-user -- browse
-user -- reservations
-admin -- rooms
-note right of reservations
-  User: create up to 3 active reservations;
-  view, edit and delete own reservations.
-  Admin: view, edit and delete any reservation.
-  Authentication is a precondition, not a sequence edge.
-end note
-note bottom of rooms
-  Administrative room CRUD is preserved from the existing API.
-  Additional requirements A1-A13 are documented separately.
-end note
-=======
 @startuml WoTA_UseCase
 ' WoTA (Project #6 Co-working Space Reservation) - UML Use Case Diagram
 ' Adapted from the course VacQ use case diagram: Hospital -> Co-working Space, Appointment -> Reservation.
@@ -59,5 +22,4 @@ register -- admin
 manageSpace -- admin
 manageReservation -- admin
 
->>>>>>> Stashed changes
 @enduml

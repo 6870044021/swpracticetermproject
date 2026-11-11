@@ -1,21 +1,5 @@
+//เดี๋ยวต้องใช้ method ต่างๆของ express
 const express = require('express');
-<<<<<<< Updated upstream
-const controller = require('../controllers/auth');
-const { protect, authorize } = require('../middleware/auth');
-const { asyncHandler } = require('../utils/errors');
-const router = express.Router();
-router.post('/register', asyncHandler(controller.register));
-router.post('/login', asyncHandler(controller.login));
-router.get('/passwordHint', asyncHandler(controller.getPasswordHint));
-router.post('/passwordHint', asyncHandler(controller.getPasswordHint));
-router.put('/passwordHint', protect, asyncHandler(controller.setPasswordHint));
-router.get('/me', protect, asyncHandler(controller.getMe));
-router.route('/logout').get(protect, asyncHandler(controller.logout)).post(protect, asyncHandler(controller.logout));
-router.post('/changePassword', protect, asyncHandler(controller.changePassword));
-router.put('/changePassword', protect, asyncHandler(controller.changePassword));
-router.post('/suspend', protect, authorize('admin'), asyncHandler(controller.suspendUser));
-module.exports = router;
-=======
 //require controller ของ authentication ด้วย
 const {
     register,
@@ -263,4 +247,3 @@ module.exports = router;
  *       404:
  *         description: User not found
  */
->>>>>>> Stashed changes

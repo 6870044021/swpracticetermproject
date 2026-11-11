@@ -1,15 +1,4 @@
 const mongoose = require('mongoose');
-<<<<<<< Updated upstream
-const { parseOpeningHours } = require('../utils/booking');
-const RoomSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true, trim: true, maxlength: 100 },
-  description: { type: String, default: '', maxlength: 2000 },
-  address: { type: String, required: true, trim: true, maxlength: 500 },
-  tel: { type: String, required: true, trim: true, maxlength: 30 },
-  openCloseTimes: { type: String, required: true, validate: { validator: value => { try { parseOpeningHours(value); return true; } catch { return false; } }, message: 'openCloseTimes must contain valid HH:mm-HH:mm hours' } },
-  district: String, province: String, postalcode: String, region: String
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
-=======
 const { isValidOpenCloseTimes, OPEN_CLOSE_FORMAT_MESSAGE } = require('../utils/time');
 
 // A co-working space (room). FR3: name, address, telephone number and open-close time.
@@ -76,5 +65,4 @@ RoomSchema.virtual('notes', {
     justOne: false
 });
 
->>>>>>> Stashed changes
 module.exports = mongoose.model('Room', RoomSchema);
