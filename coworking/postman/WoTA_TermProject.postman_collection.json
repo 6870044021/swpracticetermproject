@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b6a1f8c2-5d1e-4c39-9a51-3d5f0c2e7a10",
     "name": "WoTA Term Project (Co-working Space Reservation)",
-    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users and rooms, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFR1-FR9 are the functional requirements of Project #6; A1-A13 are the additional requirements claimed as extra credits.",
+    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users and rooms, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFR1-FR9 are the functional requirements of Project #6; A1-A13 are the additional requirements claimed as extra credits.\nFolder 11 checks that the original VacQ APIs from Assignment 7 (hospitals and appointments) still work.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -5152,7 +5152,1054 @@
       ]
     },
     {
-      "name": "11 Cleanup (cascade delete)",
+      "name": "11 VacQ APIs kept from Assignment 7 (hospitals and appointments)",
+      "description": "The original VacQ endpoints still work exactly as in Assignment 7.",
+      "item": [
+        {
+          "name": "Get All Hospitals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns a list\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create New Hospital",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"HOSPITAL_NAME\", `BNH${pm.collectionVariables.get(\"RUN_ID\")}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Hospital has _id and id\", () => pm.expect(res.data.id).to.eql(res.data._id));",
+                  "pm.collectionVariables.set(\"HOSPITAL_ID\", res.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"{{HOSPITAL_NAME}}\",\n    \"address\": \"Changwattana Pakkret\",\n    \"district\": \"Pakkret\",\n    \"province\": \"ขอนแก่น\",\n    \"postalcode\": \"10110\",\n    \"tel\": \"02-8369999\",\n    \"region\": \"กรุงเทพมหานคร (Bangkok)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create New Hospital - user is forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorized\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Not allowed {{RUN_ID}}\",\n    \"address\": \"x\",\n    \"district\": \"x\",\n    \"province\": \"x\",\n    \"postalcode\": \"10110\",\n    \"region\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Hospitals - filter, select and sort",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Exactly the new hospital, only the selected fields\", () => {",
+                  "    pm.expect(res.count).to.eql(1);",
+                  "    pm.expect(res.data[0].name).to.eql(pm.collectionVariables.get(\"HOSPITAL_NAME\"));",
+                  "    pm.expect(res.data[0]).to.not.have.property(\"address\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals?name={{HOSPITAL_NAME}}&select=name,province&sort=name",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "{{HOSPITAL_NAME}}"
+                },
+                {
+                  "key": "select",
+                  "value": "name,province"
+                },
+                {
+                  "key": "sort",
+                  "value": "name"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Hospital",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"It is the new hospital\", () => pm.expect(pm.response.json().data._id).to.eql(pm.collectionVariables.get(\"HOSPITAL_ID\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Single Hospital",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Name updated\", () => pm.expect(pm.response.json().data.name).to.eql(`World Medical ${pm.collectionVariables.get(\"RUN_ID\")}`));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"World Medical {{RUN_ID}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Appt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Owner comes from the token\", () => pm.expect(res.data.user).to.eql(pm.collectionVariables.get(\"USER2_ID\")));",
+                  "pm.collectionVariables.set(\"APPT1_ID\", res.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T10:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Appt 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"APPT2_ID\", pm.response.json().data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T11:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Appt 3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"APPT3_ID\", pm.response.json().data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T12:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Appt - 4th is rejected (max 3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"already made 3 appointments\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T13:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Appointments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Only User 2's 3 appointments\", () => {",
+                  "    pm.expect(res.count).to.eql(3);",
+                  "    res.data.forEach((a) => pm.expect(a.user).to.eql(pm.collectionVariables.get(\"USER2_ID\")));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Appt for Hospital",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"3 appointments of the hospital\", () => pm.expect(pm.response.json().count).to.eql(3));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get One Appt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Hospital details are included\", () => pm.expect(pm.response.json().data.hospital).to.include.keys(\"name\", \"province\", \"tel\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{APPT1_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get One Appt - other user is not authorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorized\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{APPT1_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Appt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"New date saved\", () => {",
+                  "    const expected = new Date(`${pm.collectionVariables.get(\"TOMORROW\")}T15:00:00+07:00`).toISOString();",
+                  "    pm.expect(new Date(pm.response.json().data.apptDate).toISOString()).to.eql(expected);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{APPT1_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T15:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Appt - unknown hospital",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"no hospital\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{APPT1_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"hospital\": \"000000000000000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Appt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "appointments",
+                "{{APPT1_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Single Hospital",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Appointments of the deleted hospital are gone (cascade)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"No appointments left\", () => pm.expect(pm.response.json().count).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}",
+                "appointments"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Hospital - deleted hospital (400 as in Assignment 7)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"hospital not found\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals",
+                "{{HOSPITAL_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12 Cleanup (cascade delete)",
       "description": "Deleting a room also deletes its reservations, reviews and notes.",
       "item": [
         {
@@ -5543,6 +6590,26 @@
     },
     {
       "key": "SOON_END",
+      "value": ""
+    },
+    {
+      "key": "HOSPITAL_NAME",
+      "value": ""
+    },
+    {
+      "key": "HOSPITAL_ID",
+      "value": ""
+    },
+    {
+      "key": "APPT1_ID",
+      "value": ""
+    },
+    {
+      "key": "APPT2_ID",
+      "value": ""
+    },
+    {
+      "key": "APPT3_ID",
       "value": ""
     }
   ]

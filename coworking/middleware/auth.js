@@ -18,8 +18,13 @@ exports.protect = async (req, res, next) => {
         token = req.headers.authorization.split(' ')[1];
     }
 
+    //Cookie fallback (as in Assignment 7/10): login sets the token cookie and logout replaces it with 'none'
+    if (!token && req.cookies && req.cookies.token) {
+        token = req.cookies.token;
+    }
+
     //Make sure token exists (Postman sets TOKEN to null after logout)
-    if (!token || token === 'null') {
+    if (!token || token === 'null' || token === 'none') {
         return notAuthorized(res);
     }
 

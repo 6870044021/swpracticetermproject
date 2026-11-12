@@ -8,6 +8,7 @@ Chulalongkorn University
 
 A Co-working Space Reservation system (Project #6), built as REST APIs with Node.js, Express and MongoDB Atlas,
 by modifying the course VacQ code from Assignment 7 (Hospital → Co-working space/Room, Appointment → Reservation).
+The original VacQ APIs from Assignment 7 (`/api/v1/hospitals`, `/api/v1/appointments`) are kept and work as before.
 
 Contributors:
 
@@ -41,7 +42,8 @@ API documentation (Swagger UI): http://localhost:5000/api-docs
 ## Test with Postman / Newman
 
 The collection `coworking/postman/WoTA_TermProject.postman_collection.json` runs top to bottom
-(97 requests, 178 assertions) and creates its own users and rooms, so it can be run again and again.
+(117 requests, 214 assertions in 13 folders) and creates its own users, rooms and hospitals, so it can be run again and again.
+Folder 11 checks the VacQ hospital and appointment APIs kept from Assignment 7.
 
 ```bash
 cd coworking
@@ -76,10 +78,23 @@ To test another server, change the `URL` collection variable (default `http://lo
 | GET / POST | `/api/v1/rooms/:roomId/notes` | User (own notes) | A8 |
 | GET | `/api/v1/notes` | User (own notes) | A8 |
 | GET / PUT / DELETE | `/api/v1/notes/:id` | Owner | A8 |
+| GET | `/api/v1/hospitals` | Public | VacQ, Assignment 7 (filter `?field[gt]=`, `select`, `sort`, `page`, `limit`) |
+| GET | `/api/v1/hospitals/:id` | Public | VacQ, Assignment 7 |
+| POST / PUT / DELETE | `/api/v1/hospitals`, `/api/v1/hospitals/:id` | Admin | VacQ, Assignment 7 (delete cascades to appointments) |
+| GET / POST | `/api/v1/hospitals/:hospitalId/appointments` | User | VacQ, Assignment 7 (a user may hold at most 3 appointments) |
+| GET | `/api/v1/appointments` | User | VacQ, Assignment 7 (own; admin: all) |
+| GET / PUT / DELETE | `/api/v1/appointments/:id` | Owner or admin | VacQ, Assignment 7 |
 
 Reservation body: `{ "reservationDate": "2026-11-20T09:00:00+07:00", "endDate": "2026-11-20T11:00:00+07:00" }`
 (`endDate` defaults to 1 hour later). Room `openCloseTimes` uses `HH:mm-HH:mm`, e.g. `08:00-20:00` (`00:00-24:00` = 24 hours).
 
+Register body: `{ "name": "Admin", "email": "admin@example.com", "tel": "0812345678", "password": "Admin1234", "role": "admin" }`.
+`tel` is required (FR1) and the password needs at least 8 characters with a lowercase letter, an uppercase letter and a number (A1),
+so an Assignment 7 register body (no `tel`, password `12345678`) now gets 400. Login does not check password strength,
+so accounts created in Assignment 7 in the same database can still log in.
+
 ## Diagrams
 
 PlantUML sources: `VacQusecase.puml`, `VacQclass.puml`, `VacQSequence.puml`. Rendered PNG/SVG: `docs/diagrams/`.
+`VacQclass.puml` holds three class diagrams (UML Profile for REST): `WoTA_Class_UMLProfile` (FR1–FR9),
+`WoTA_Class_UMLProfile_Full` (with the extra credits) and `WoTA_Class_UMLProfile_VacQ` (the VacQ API kept from Assignment 7).

@@ -267,3 +267,69 @@ ResourceNote ..> RepresentationNote:"<<use>>"
 ResourceRoomNotes ..> RepresentationNote:"<<use>>"
 
 @enduml
+
+@startuml WoTA_Class_UMLProfile_VacQ
+' The VacQ API from Assignment 7 that WoTA keeps unchanged (hospitals and appointments), in the
+' same UML Profile notation as the course VacQ diagram. Not part of the Project #6 requirements.
+left to right direction
+hide circle
+hide empty members
+skinparam classAttributeIconSize 0
+package "WoTA (VacQ API kept from Assignment 7)"{
+    class "<<Application>>\nWoTAService" as WoTAService{}
+
+    class "<<Resource>>\nHospitals" as ResourceHospitals{
+        <<GET>> +getHospitals():Hospital
+        <<POST>> +createHospital():Hospital
+    }
+
+    class "<<Resource>>\nHospital" as ResourceHospital{
+        <<GET>> +getHospital():Hospital
+        <<PUT>> +updateHospital():Hospital
+        <<DELETE>> +deleteHospital():void
+    }
+
+    class "<<Representation>>\nHospital" as RepresentationHospital{
+        -name
+        -address
+        -district
+        -province
+        -postalcode
+        -tel
+        -region
+    }
+
+    class "<<Resource>>\nHospitalAppointments" as ResourceHospitalAppointments{
+        <<GET>> +getAppointments():Appointment
+        <<POST>> +addAppointment():Appointment
+    }
+
+    class "<<Resource>>\nAppointments" as ResourceAppointments{
+        <<GET>> +getAppointments():Appointment
+    }
+
+    class "<<Resource>>\nAppointment" as ResourceAppointment{
+        <<GET>> +getAppointment():Appointment
+        <<PUT>> +updateAppointment():Appointment
+        <<DELETE>> +deleteAppointment():void
+    }
+
+    class "<<Representation>>\nAppointment" as RepresentationAppointment{
+        -apptDate
+        -user
+        -hospital
+        -createdAt
+    }
+}
+
+WoTAService ..> ResourceHospitals:"/hospitals\n<<Path>>"
+ResourceHospitals ..> ResourceHospital:"/{hospitalId}\n<<Path>>"
+ResourceHospital ..> RepresentationHospital:"<<use>>"
+ResourceHospital ..> ResourceHospitalAppointments:"/appointments\n<<Path>>"
+ResourceHospitalAppointments ..> RepresentationAppointment:"<<use>>"
+
+WoTAService ..> ResourceAppointments:"/appointments\n<<Path>>"
+ResourceAppointments ..> ResourceAppointment:"/{appointmentId}\n<<Path>>"
+ResourceAppointment ..> RepresentationAppointment:"<<use>>"
+
+@enduml

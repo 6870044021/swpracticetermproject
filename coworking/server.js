@@ -25,6 +25,9 @@ const reservations = require('./routes/reservations');
 const reviews = require('./routes/reviews');
 const notes = require('./routes/notes');
 const auth = require('./routes/auth');
+//API เดิมของ VacQ จาก Assignment 7 (hospitals, appointments) ยังใช้งานได้เหมือนเดิม
+const hospitals = require('./routes/hospitals');
+const appointments = require('./routes/appointments');
 
 const app = express();
 
@@ -93,6 +96,9 @@ app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/notes', notes);
 //ถ้ามี request มาที่ path นี้ให้ส่งต่อไปไฟล์ auth
 app.use('/api/v1/auth', auth);
+//VacQ (Assignment 7): same paths, controllers and models as the original assignment
+app.use('/api/v1/hospitals', hospitals);
+app.use('/api/v1/appointments', appointments);
 
 //Unknown route
 app.use((req, res) => {
