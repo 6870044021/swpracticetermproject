@@ -42,7 +42,7 @@ API documentation (Swagger UI): http://localhost:5000/api-docs
 ## Test with Postman / Newman
 
 The collection `coworking/postman/WoTA_TermProject.postman_collection.json` runs top to bottom
-(121 requests, 222 assertions in 20 folders) and creates its own users, rooms and hospitals, so it can be run again and again.
+(124 requests, 227 assertions in 20 folders) and creates its own users, rooms and hospitals, so it can be run again and again.
 Folders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in,
 view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in,
 and admin view, edit and delete any booking. Folders 13-16 demo the extra credits, 17 admin management of co-working spaces,

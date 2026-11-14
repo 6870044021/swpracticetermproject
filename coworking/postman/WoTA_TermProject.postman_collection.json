@@ -2,8 +2,7 @@
   "info": {
     "_postman_id": "b6a1f8c2-5d1e-4c39-9a51-3d5f0c2e7a10",
     "name": "WoTA Term Project (Co-working Space Reservation)",
-    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users, rooms and hospitals, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFolders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in, view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in, and admin view, edit and delete any booking.\nFolders 13-16 demo the extra credits A1-A13 (A4, A6 and A7 are also checked in folders 3-7). Folder 17 checks admin management of co-working spaces, folder 18 the VacQ APIs kept from Assignment 7, and folder 19 cleans up.",
-    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users, rooms and hospitals, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFolders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in, view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in, and admin view, edit and delete any booking.\nFolders 13-16 demo the extra credits A1-A13 (A4, A6 and A7 are also checked in folders 3-7). Folder 17 checks admin management of co-working spaces, folder 18 the VacQ APIs kept from Assignment 7, and folder 19 cleans up.",
+    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users, rooms and hospitals, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFolders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in, view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in, and admin view, edit and delete any booking.\nFolders 13-16 demo the extra credits A1-A13 (folder 14 also shows that an admin cannot edit but can delete another user's review, A10) (A4, A6 and A7 are also checked in folders 3-7). Folder 17 checks admin management of co-working spaces, folder 18 the VacQ APIs kept from Assignment 7, and folder 19 cleans up.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -4080,6 +4079,69 @@
           "response": []
         },
         {
+          "name": "Admin cannot edit User 1's review (A10)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorized\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/reviews/{{REVIEW1_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{REVIEW1_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Edited by an admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
           "name": "User 1 edits own review (A10)",
           "event": [
             {
@@ -4234,6 +4296,98 @@
                   "language": "json"
                 }
               }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin deletes User 2's review (A10)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/reviews/{{REVIEW2_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{REVIEW2_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deleted review is gone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"no review\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/reviews/{{REVIEW2_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{REVIEW2_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": []
