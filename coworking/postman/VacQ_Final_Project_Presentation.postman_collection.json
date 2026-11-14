@@ -28,7 +28,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\" : \"user@gmail.com\",\r\n    \"password\" : \"12345678\"\r\n}",
+              "raw": "{\r\n    \"email\" : \"user@gmail.com\",\r\n    \"password\" : \"Password1234\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -107,7 +107,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\r\n\r\npm.execution.setNextRequest(\"Register Admin\");\r\n\r\npm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.environment.set(\"IDRegisterUser\", pm.response.json()._id);"
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\r\n\r\npm.execution.setNextRequest(\"Register Admin\");\r\n\r\npm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.environment.set(\"IDRegisterUser\", pm.response.json()._id);\r\n\r\npm.environment.set(\"AccountUserEmail\", pm.response.json().email);"
                 ]
               }
             }
@@ -156,7 +156,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\r\n\r\npm.execution.setNextRequest(\"Add or change your password hint\");\r\n\r\npm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.environment.set(\"EMAIL\", pm.response.json().email);\r\n\r\npm.environment.set(\"IDRegister\", pm.response.json()._id);"
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\r\n\r\npm.execution.setNextRequest(\"Add or change your password hint\");\r\n\r\npm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.environment.set(\"EMAIL\", pm.response.json().email);\r\n\r\npm.environment.set(\"IDRegister\", pm.response.json()._id);\r\n\r\npm.environment.set(\"AccountAdminEmail\", pm.response.json().email);"
                 ]
               }
             }

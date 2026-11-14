@@ -19,7 +19,7 @@ server->routerAuth ++:app.use('/api/v1/auth',auth)
 routerAuth->controllersAuth ++:register()
 deactivate routerAuth
 deactivate server
-controllersAuth->modelUser ++:create(req.body)
+controllersAuth->modelUser ++:create({name, tel, email, password, role})
 modelUser->modelUser :pre('save') hash password
 modelUser->UsersDatabase ++:UserSchema
 UsersDatabase-->modelUser --:user

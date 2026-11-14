@@ -2,7 +2,8 @@
   "info": {
     "_postman_id": "b6a1f8c2-5d1e-4c39-9a51-3d5f0c2e7a10",
     "name": "WoTA Term Project (Co-working Space Reservation)",
-    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users and rooms, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFR1-FR9 are the functional requirements of Project #6; A1-A13 are the additional requirements claimed as extra credits.\nFolder 11 checks that the original VacQ APIs from Assignment 7 (hospitals and appointments) still work.",
+    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users, rooms and hospitals, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFolders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in, view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in, and admin view, edit and delete any booking.\nFolders 13-16 demo the extra credits A1-A13 (A4, A6 and A7 are also checked in folders 3-7). Folder 17 checks admin management of co-working spaces, folder 18 the VacQ APIs kept from Assignment 7, and folder 19 cleans up.",
+    "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users, rooms and hospitals, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFolders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in, view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in, and admin view, edit and delete any booking.\nFolders 13-16 demo the extra credits A1-A13 (A4, A6 and A7 are also checked in folders 3-7). Folder 17 checks admin management of co-working spaces, folder 18 the VacQ APIs kept from Assignment 7, and folder 19 cleans up.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -23,8 +24,8 @@
   ],
   "item": [
     {
-      "name": "0 Setup",
-      "description": "Register an admin and two users for this run.",
+      "name": "0 Setup (admin, a second user and two co-working spaces)",
+      "description": "Registers an admin and User 2 and creates Room A (08:00-20:00) and Room B (24 hours), so the steps below have data.",
       "item": [
         {
           "name": "Register Admin",
@@ -95,7 +96,194 @@
           "response": []
         },
         {
-          "name": "Register User 1",
+          "name": "Register User 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.collectionVariables.set(\"USER2_TOKEN\", res.token);",
+                  "pm.collectionVariables.set(\"USER2_ID\", res._id);",
+                  "if (pm.response.code !== 201) { pm.execution.setNextRequest(null); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/register",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Ta Tester\",\n    \"tel\": \"02-218-6956\",\n    \"email\": \"{{USER2_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Room A 08:00-20:00 (admin)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"ROOM_A_NAME\", `WoTA Room A ${pm.collectionVariables.get(\"RUN_ID\")}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Has name, address, telephone number and open-close time (FR3)\", () => {",
+                  "    pm.expect(res.data).to.include.keys(\"name\", \"address\", \"tel\", \"openCloseTimes\");",
+                  "});",
+                  "pm.collectionVariables.set(\"ROOM_A_ID\", res.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"{{ROOM_A_NAME}}\",\n    \"description\": \"Quiet room for 6 people with a whiteboard\",\n    \"address\": \"254 Phayathai Road, Pathumwan, Bangkok 10330\",\n    \"tel\": \"02-218-6956\",\n    \"openCloseTimes\": \"08:00-20:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Room B open 24 hours (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"ROOM_B_ID\", pm.response.json().data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"WoTA Room B {{RUN_ID}}\",\n    \"description\": \"Hot desk zone\",\n    \"address\": \"254 Phayathai Road, Pathumwan, Bangkok 10330\",\n    \"tel\": \"02-218-6957\",\n    \"openCloseTimes\": \"00:00-24:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1 User Registration + Validation Check (FR1, A1, A3)",
+      "description": "Step 1. A user registers with name, telephone number, email and a strong password; invalid data is rejected.",
+      "item": [
+        {
+          "name": "Register User 1 (FR1)",
           "event": [
             {
               "listen": "test",
@@ -149,66 +337,6 @@
           "response": []
         },
         {
-          "name": "Register User 2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "const res = pm.response.json();",
-                  "pm.collectionVariables.set(\"USER2_TOKEN\", res.token);",
-                  "pm.collectionVariables.set(\"USER2_ID\", res._id);",
-                  "if (pm.response.code !== 201) { pm.execution.setNextRequest(null); }"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/auth/register",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "register"
-              ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Ta Tester\",\n    \"tel\": \"02-218-6956\",\n    \"email\": \"{{USER2_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"role\": \"user\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "1 FR1 Register (A1 strong password, A3 hint)",
-      "description": "Registration needs name, telephone number, email and a strong password.",
-      "item": [
-        {
           "name": "Register - missing telephone number (FR1)",
           "event": [
             {
@@ -255,6 +383,62 @@
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"No Tel\",\n    \"email\": \"notel{{RUN_ID}}@wota.test\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register - password without lowercase letter (A1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"lowercase\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/register",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak0_{{RUN_ID}}@wota.test\",\n    \"password\": \"WOTA1234\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -547,8 +731,8 @@
       ]
     },
     {
-      "name": "2 FR2 Login and Logout",
-      "description": "Login with email and password; logout clears the token.",
+      "name": "2 User Log-in (FR2)",
+      "description": "Step 2. Log in with email and password.",
       "item": [
         {
           "name": "Login User 1 (FR2)",
@@ -759,419 +943,13 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Logout (FR2)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.collectionVariables.set(\"TOKEN\", null);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{URL}}/api/v1/auth/logout",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "logout"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Me after logout - not authorized",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 401\", function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test(\"Response explains the error\", function () {",
-                  "    const res = pm.response.json();",
-                  "    pm.expect(res.success).to.eql(false);",
-                  "    pm.expect(res.message).to.be.a(\"string\");",
-                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorize\");",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{URL}}/api/v1/auth/me",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "me"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "response": []
         }
       ]
     },
     {
-      "name": "3 Co-working spaces (FR3 space list)",
-      "description": "Admins manage co-working spaces; everyone can list them.",
+      "name": "3 User View Product: co-working spaces (FR3, A4)",
+      "description": "Step 3. Everyone can list co-working spaces (name, address, telephone number, open-close time) and check free times.",
       "item": [
-        {
-          "name": "Create Room A 08:00-20:00 (admin)",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.collectionVariables.set(\"ROOM_A_NAME\", `WoTA Room A ${pm.collectionVariables.get(\"RUN_ID\")}`);"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "const res = pm.response.json();",
-                  "pm.test(\"Has name, address, telephone number and open-close time (FR3)\", () => {",
-                  "    pm.expect(res.data).to.include.keys(\"name\", \"address\", \"tel\", \"openCloseTimes\");",
-                  "});",
-                  "pm.collectionVariables.set(\"ROOM_A_ID\", res.data._id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"{{ROOM_A_NAME}}\",\n    \"description\": \"Quiet room for 6 people with a whiteboard\",\n    \"address\": \"254 Phayathai Road, Pathumwan, Bangkok 10330\",\n    \"tel\": \"02-218-6956\",\n    \"openCloseTimes\": \"08:00-20:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Room B open 24 hours (admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "pm.collectionVariables.set(\"ROOM_B_ID\", pm.response.json().data._id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"WoTA Room B {{RUN_ID}}\",\n    \"description\": \"Hot desk zone\",\n    \"address\": \"254 Phayathai Road, Pathumwan, Bangkok 10330\",\n    \"tel\": \"02-218-6957\",\n    \"openCloseTimes\": \"00:00-24:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Room - user is forbidden",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 403\", function () {",
-                  "    pm.response.to.have.status(403);",
-                  "});",
-                  "pm.test(\"Response explains the error\", function () {",
-                  "    const res = pm.response.json();",
-                  "    pm.expect(res.success).to.eql(false);",
-                  "    pm.expect(res.message).to.be.a(\"string\");",
-                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorized\");",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Not allowed {{RUN_ID}}\",\n    \"description\": \"x\",\n    \"address\": \"x\",\n    \"tel\": \"0811111111\",\n    \"openCloseTimes\": \"08:00-20:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Room - invalid open-close times",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 400\", function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "pm.test(\"Response explains the error\", function () {",
-                  "    const res = pm.response.json();",
-                  "    pm.expect(res.success).to.eql(false);",
-                  "    pm.expect(res.message).to.be.a(\"string\");",
-                  "    pm.expect(res.message.toLowerCase()).to.include(\"open-close\");",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Bad hours {{RUN_ID}}\",\n    \"description\": \"x\",\n    \"address\": \"x\",\n    \"tel\": \"0811111111\",\n    \"openCloseTimes\": \"8am-5pm\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Room - missing fields",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 400\", function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "pm.test(\"Response explains the error\", function () {",
-                  "    const res = pm.response.json();",
-                  "    pm.expect(res.success).to.eql(false);",
-                  "    pm.expect(res.message).to.be.a(\"string\");",
-                  "    pm.expect(res.message.toLowerCase()).to.include(\"please add\");",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Missing {{RUN_ID}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
         {
           "name": "Get All Rooms (public)",
           "event": [
@@ -1355,64 +1133,6 @@
           "response": []
         },
         {
-          "name": "Update Room A (admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Telephone number changed\", () => pm.expect(pm.response.json().data.tel).to.eql(\"02-218-6999\"));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms",
-                "{{ROOM_A_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"tel\": \"02-218-6999\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Room A availability tomorrow (A4)",
           "event": [
             {
@@ -1465,8 +1185,8 @@
       ]
     },
     {
-      "name": "4 FR3 Reserve up to 3 rooms (A4 availability)",
-      "description": "Reservations need a free time slot inside opening hours; a user holds at most 3 active reservations.",
+      "name": "4 User Create Booking + Check Create Condition (FR3, A4)",
+      "description": "Step 4. Reserve a free slot inside opening hours; overlapping, closed, past, reversed and 4th active bookings are rejected.",
       "item": [
         {
           "name": "User 1 reserves Room A tomorrow 09:00-10:00 (FR3)",
@@ -2090,8 +1810,8 @@
       ]
     },
     {
-      "name": "5 FR4-FR6 User views, edits and deletes own reservations (A6, A7)",
-      "description": "Owners only; edit/delete at least 1 hour before the reservation begins.",
+      "name": "5 User View Own Booking (FR4)",
+      "description": "Step 5. A user sees only their own reservations.",
       "item": [
         {
           "name": "User 1 views own reservations (FR4)",
@@ -2277,7 +1997,13 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "6 User Edit Own Booking (FR5, A4, A6)",
+      "description": "Step 6. Owners edit their reservation at least 1 hour before it begins.",
+      "item": [
         {
           "name": "User 1 edits reservation 1 to 15:00-16:00 (FR5)",
           "event": [
@@ -2591,7 +2317,13 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "7 User Delete Own Booking (FR6, A7)",
+      "description": "Step 7. Owners delete their reservation at least 1 hour before it begins.",
+      "item": [
         {
           "name": "User 1 cannot delete within 1 hour of the start (A7)",
           "event": [
@@ -2730,8 +2462,214 @@
       ]
     },
     {
-      "name": "6 FR7-FR9 Admin views, edits and deletes any reservation",
-      "description": "Admins are not limited to their own reservations and are exempt from the 1-hour rule.",
+      "name": "8 User Log-out (FR2)",
+      "description": "Step 8. Log out; the old token no longer reaches /auth/me.",
+      "item": [
+        {
+          "name": "Logout (FR2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"TOKEN\", null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/logout",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me after logout - not authorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorize\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/me",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9 Admin Log-in (FR2)",
+      "description": "Step 9. The admin logs in with email and password.",
+      "item": [
+        {
+          "name": "Admin Log-in (FR2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"ADMIN_TOKEN\", res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{ADMIN_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me (Admin) - role is admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"It is the admin\", () => {",
+                  "    pm.expect(res.data.email).to.eql(pm.collectionVariables.get(\"ADMIN_EMAIL\"));",
+                  "    pm.expect(res.data.role).to.eql(\"admin\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/me",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10 Admin View Any Booking (FR7)",
+      "description": "Step 10. Admins see every reservation.",
       "item": [
         {
           "name": "Admin views all reservations (FR7)",
@@ -2825,7 +2763,13 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "11 Admin Edit Any Booking (FR8)",
+      "description": "Step 11. Admins edit any reservation and are exempt from the 1-hour rule.",
+      "item": [
         {
           "name": "Admin edits User 1's reservation (FR8) - moves it to yesterday",
           "event": [
@@ -2883,7 +2827,13 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "12 Admin Delete Any Booking (FR9)",
+      "description": "Step 12. Admins delete any reservation.",
+      "item": [
         {
           "name": "Admin deletes User 2's reservation (FR9)",
           "event": [
@@ -2979,9 +2929,62 @@
       ]
     },
     {
-      "name": "7 A9 Suspend users, A11 suspended users cannot reserve or review",
-      "description": "Admins suspend users for some days or indefinitely.",
+      "name": "13 Extra credits A9 A11: suspend users",
+      "description": "Admins suspend users for some days or indefinitely; suspended users cannot reserve or review.",
       "item": [
+        {
+          "name": "Login User 1 again for the extra credit demo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"USER1_TOKEN\", res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
         {
           "name": "User cannot suspend anyone",
           "event": [
@@ -3706,7 +3709,7 @@
       ]
     },
     {
-      "name": "8 A5 A10 A12 A13 Reviews",
+      "name": "14 Extra credits A5 A10 A12 A13: reviews",
       "description": "Reviews show the reviewer's past bookings; 1 review per room; anonymous reviews are opt-in and can be filtered out.",
       "item": [
         {
@@ -4238,8 +4241,8 @@
       ]
     },
     {
-      "name": "9 A8 Personal notes",
-      "description": "Each user can keep a private note on each room.",
+      "name": "15 Extra credits A8: personal notes",
+      "description": "Each user keeps a private note on each room; nobody else can read it, admins included.",
       "item": [
         {
           "name": "User 1 adds a note to Room A (A8)",
@@ -4691,7 +4694,7 @@
       ]
     },
     {
-      "name": "10 A1 A2 A3 Password",
+      "name": "16 Extra credits A1 A2 A3: password",
       "description": "Password hint, and changing the password with the old one.",
       "item": [
         {
@@ -5152,7 +5155,257 @@
       ]
     },
     {
-      "name": "11 VacQ APIs kept from Assignment 7 (hospitals and appointments)",
+      "name": "17 Admin manages co-working spaces",
+      "description": "Only admins create and update co-working spaces; invalid data is rejected.",
+      "item": [
+        {
+          "name": "Create Room - user is forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"not authorized\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Not allowed {{RUN_ID}}\",\n    \"description\": \"x\",\n    \"address\": \"x\",\n    \"tel\": \"0811111111\",\n    \"openCloseTimes\": \"08:00-20:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Room - invalid open-close times",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"open-close\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Bad hours {{RUN_ID}}\",\n    \"description\": \"x\",\n    \"address\": \"x\",\n    \"tel\": \"0811111111\",\n    \"openCloseTimes\": \"8am-5pm\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Room - missing fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response explains the error\", function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(false);",
+                  "    pm.expect(res.message).to.be.a(\"string\");",
+                  "    pm.expect(res.message.toLowerCase()).to.include(\"please add\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Missing {{RUN_ID}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Room A (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Telephone number changed\", () => pm.expect(pm.response.json().data.tel).to.eql(\"02-218-6999\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms",
+                "{{ROOM_A_ID}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tel\": \"02-218-6999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "18 VacQ APIs kept from Assignment 7 (hospitals and appointments)",
       "description": "The original VacQ endpoints still work exactly as in Assignment 7.",
       "item": [
         {
@@ -6199,8 +6452,8 @@
       ]
     },
     {
-      "name": "12 Cleanup (cascade delete)",
-      "description": "Deleting a room also deletes its reservations, reviews and notes.",
+      "name": "19 Cleanup (cascade delete)",
+      "description": "Admins delete the rooms of this run; their reservations, reviews and notes go with them.",
       "item": [
         {
           "name": "User cannot delete a room",

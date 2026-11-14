@@ -42,8 +42,11 @@ API documentation (Swagger UI): http://localhost:5000/api-docs
 ## Test with Postman / Newman
 
 The collection `coworking/postman/WoTA_TermProject.postman_collection.json` runs top to bottom
-(117 requests, 214 assertions in 13 folders) and creates its own users, rooms and hospitals, so it can be run again and again.
-Folder 11 checks the VacQ hospital and appointment APIs kept from Assignment 7.
+(121 requests, 222 assertions in 20 folders) and creates its own users, rooms and hospitals, so it can be run again and again.
+Folders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in,
+view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in,
+and admin view, edit and delete any booking. Folders 13-16 demo the extra credits, 17 admin management of co-working spaces,
+18 the VacQ APIs kept from Assignment 7, and 19 cleans up.
 
 ```bash
 cd coworking
@@ -59,7 +62,7 @@ To test another server, change the `URL` collection variable (default `http://lo
 | --- | --- | --- | --- |
 | POST | `/api/v1/auth/register` | Public | FR1, A1, A3 |
 | POST | `/api/v1/auth/login` | Public | FR2 |
-| GET | `/api/v1/auth/logout` | User | FR2 |
+| GET | `/api/v1/auth/logout` | Public | FR2 (clears the token cookie) |
 | GET | `/api/v1/auth/me` | User | FR2 |
 | POST | `/api/v1/auth/changePassword` | User | A2 (A1 rules) |
 | POST | `/api/v1/auth/passwordhint` | Public | A3 (get hint by email) |
