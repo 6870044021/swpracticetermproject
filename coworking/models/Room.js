@@ -13,17 +13,21 @@ const RoomSchema = new mongoose.Schema({
     description: {
         type: String,
         required: [true, 'Please add a description'],
-        trim: true
+        trim: true,
+        maxlength: [2500, 'Description can not be more than 2500 characters']
     },
     address: {
         type: String,
         required: [true, 'Please add an address'],
-        trim: true
+        trim: true,
+        maxlength: [500, 'Address can not be more than 500 characters']
     },
     tel: {
         type: String,
         required: [true, 'Please add a telephone number'],
-        trim: true
+        trim: true,
+        match: [/^\+?[0-9][0-9\- ]{7,18}[0-9]$/, 'Please add a valid telephone number, e.g. 0812345678 or 02-123-4567']
+        
     },
     // e.g. "08:00-20:00" (local time). A4 uses it to accept bookings only inside opening hours.
     openCloseTimes: {

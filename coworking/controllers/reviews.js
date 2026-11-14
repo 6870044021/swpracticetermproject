@@ -172,9 +172,7 @@ exports.updateReview = async (req, res, next) => {
         if (review.user.toString() !== req.user.id) {
             return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this review` });
         }
-        // if (review.user.toString() !== req.user.id && !isAdmin(req)) {
-        //     return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to update this review` });
-        // }
+
         const { reviewData, anonymousReview } = req.body;
         if (reviewData === undefined && anonymousReview === undefined) {
             return res.status(400).json({ success: false, message: 'Nothing to update. You can change reviewData and anonymousReview' });
@@ -206,7 +204,7 @@ exports.deleteReview = async (req, res, next) => {
         if (!review) {
             return res.status(404).json({ success: false, message: `No review with the id of ${req.params.id}` });
         }
-
+        //Ownership: make sure user is the review author or admin
         if (review.user.toString() !== req.user.id && !isAdmin(req)) {
             return res.status(401).json({ success: false, message: `User ${req.user.id} is not authorized to delete this review` });
         }

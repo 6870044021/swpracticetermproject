@@ -18,7 +18,8 @@ const UserSchema = new mongoose.Schema({
         match: [
             /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
             'Please add a valid email'
-        ]
+        ],
+        maxlength: [100, 'Email can not be more than 100 characters']
     },
     role: {
         type: String,
@@ -31,6 +32,7 @@ const UserSchema = new mongoose.Schema({
         required: [true, 'Please add a telephone number'],
         trim: true,
         match: [/^\+?[0-9][0-9\- ]{7,18}[0-9]$/, 'Please add a valid telephone number, e.g. 0812345678 or 02-123-4567']
+        
     },
     // A1: at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 number.
     // Validation runs on the plain-text password before the pre('save') hook hashes it.
