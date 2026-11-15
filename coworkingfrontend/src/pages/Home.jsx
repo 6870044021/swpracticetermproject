@@ -6,16 +6,17 @@ function Home(){
     return(
         <>
         <section className='heading'>
-            <h1>Vac Q: A Vaccine Booking System</h1>
+            <h1>WoTA: Working Time Allocator</h1>
+            <h2>A Co-working Space Reservation system</h2>
             <p>Please choose from an option below</p>
         </section>
 
         <Link to='/new-ticket' className='btn btn-reverse btn-block'>
-        <FaQuestionCircle />Create New Appointment
+        <FaQuestionCircle />Create New Reservation
         </Link>
 
         <Link to='/tickets' className='btn btn-block'>
-        <FaTicketAlt />View My Appointments
+        <FaTicketAlt />View My Reservations
         </Link>
         </>
     )

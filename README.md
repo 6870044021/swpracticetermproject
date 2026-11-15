@@ -8,7 +8,7 @@ Chulalongkorn University
 
 A Co-working Space Reservation system (Project #6), built as REST APIs with Node.js, Express and MongoDB Atlas,
 by modifying the course VacQ code from Assignment 7 (Hospital → Co-working space/Room, Appointment → Reservation).
-The original VacQ APIs from Assignment 7 (`/api/v1/hospitals`, `/api/v1/appointments`) are kept and work as before.
+The original VacQ APIs from Assignment 7 (`/api/v1/hospitals`, `/api/v1/appointments`) are kept and are working as before.
 
 Contributors:
 
