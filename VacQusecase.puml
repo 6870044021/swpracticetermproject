@@ -19,6 +19,7 @@ user -- manageReservation
 
 actor "Admin" as admin
 register -- admin
+viewSpaces -- admin
 manageSpace -- admin
 manageReservation -- admin
 
