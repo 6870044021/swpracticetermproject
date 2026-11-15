@@ -726,7 +726,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"No token is issued\", () => pm.expect(pm.response.json().token).to.be.undefined);"
+                  "pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"No token is issued\", () => pm.expect(pm.response.json().token).to.be.undefined);"
                 ]
               }
             }
@@ -774,7 +774,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response explains the error\", function () {\n    const res = pm.response.json();\n    pm.expect(res.success).to.eql(false);\n    pm.expect(res.message).to.be.a(\"string\");\n    pm.expect(res.message.toLowerCase()).to.include(\"invalid credentials\");\n});"
+                  "pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response explains the error\", function () {\n    const res = pm.response.json();\n    pm.expect(res.success).to.eql(false);\n    pm.expect(res.message).to.be.a(\"string\");\n    pm.expect(res.message.toLowerCase()).to.include(\"invalid credentials\");\n});"
                 ]
               }
             }
@@ -822,7 +822,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\nconst res = pm.response.json();\npm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));\npm.collectionVariables.set(\"USER1_TOKEN\", res.token);\npm.collectionVariables.set(\"TOKEN\", res.token);"
+                  "pm.collectionVariables.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\nconst res = pm.response.json();\npm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));\npm.collectionVariables.set(\"USER1_TOKEN\", res.token);\npm.collectionVariables.set(\"TOKEN\", res.token);"
                 ]
               }
             }
@@ -2440,10 +2440,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.collectionVariables.set(\"TOKEN\", null);"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.collectionVariables.set(\"TOKEN\", null);"
                 ]
               }
             }
@@ -2539,12 +2536,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "const res = pm.response.json();",
-                  "pm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));",
-                  "pm.collectionVariables.set(\"ADMIN_TOKEN\", res.token);"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\nconst res = pm.response.json();\npm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));\npm.collectionVariables.set(\"ADMIN_TOKEN\", res.token);"
                 ]
               }
             }
@@ -2907,12 +2899,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "const res = pm.response.json();",
-                  "pm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));",
-                  "pm.collectionVariables.set(\"USER1_TOKEN\", res.token);"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\nconst res = pm.response.json();\npm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));\npm.collectionVariables.set(\"USER1_TOKEN\", res.token);"
                 ]
               }
             }
