@@ -1,30 +1,15 @@
 {
   "info": {
-    "_postman_id": "b6a1f8c2-5d1e-4c39-9a51-3d5f0c2e7a10",
+    "_postman_id": "12253d82-c5cf-4a25-aac5-5a2848dfecc7",
     "name": "WoTA Term Project (Co-working Space Reservation)",
     "description": "2110503 Software Development Practice term project, group WOTA.\nRuns top to bottom in Postman Runner or Newman (`newman run WoTA_TermProject.postman_collection.json`).\nEvery run registers fresh users, rooms and hospitals, so it can be repeated. Set the URL collection variable to your server (default http://localhost:5000).\nFolders 1-12 follow the official presentation steps (Project Timeslots 69 > instructions): register + validation check, log-in, view co-working spaces, create booking + invalid conditions, view, edit and delete own booking, log-out, admin log-in, and admin view, edit and delete any booking.\nFolders 13-16 demo the extra credits A1-A13 (folder 14 also shows that an admin cannot edit but can delete another user's review, A10) (A4, A6 and A7 are also checked in folders 3-7). Folder 17 checks admin management of co-working spaces, folder 18 the VacQ APIs kept from Assignment 7, and folder 19 cleans up.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49392115",
+    "_collection_link": "https://go.postman.co/collection/49392115-12253d82-c5cf-4a25-aac5-5a2848dfecc7?source=collection_link"
   },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "// Dates in the co-working spaces' time zone (UTC+07:00), recomputed before every request",
-          "const OFFSET_MINUTES = 7 * 60;",
-          "const localNow = new Date(Date.now() + OFFSET_MINUTES * 60000);",
-          "const day = (n) => new Date(localNow.getTime() + n * 86400000).toISOString().slice(0, 10);",
-          "pm.collectionVariables.set(\"TOMORROW\", day(1));",
-          "pm.collectionVariables.set(\"YESTERDAY\", day(-1));"
-        ]
-      }
-    }
-  ],
   "item": [
     {
       "name": "0 Setup (admin, a second user and two co-working spaces)",
-      "description": "Registers an admin and User 2 and creates Room A (08:00-20:00) and Room B (24 hours), so the steps below have data.",
       "item": [
         {
           "name": "Register Admin",
@@ -60,6 +45,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -67,6 +55,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"WoTA Admin\",\n    \"tel\": \"0811111111\",\n    \"email\": \"{{ADMIN_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -78,18 +75,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"WoTA Admin\",\n    \"tel\": \"0811111111\",\n    \"email\": \"{{ADMIN_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"role\": \"admin\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -114,6 +99,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -121,6 +109,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Ta Tester\",\n    \"tel\": \"02-218-6956\",\n    \"email\": \"{{USER2_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -132,18 +129,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Ta Tester\",\n    \"tel\": \"02-218-6956\",\n    \"email\": \"{{USER2_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"role\": \"user\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -178,24 +163,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -206,6 +173,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"{{ROOM_A_NAME}}\",\n    \"description\": \"Quiet room for 6 people with a whiteboard\",\n    \"address\": \"254 Phayathai Road, Pathumwan, Bangkok 10330\",\n    \"tel\": \"02-218-6956\",\n    \"openCloseTimes\": \"08:00-20:00\"\n}",
@@ -214,6 +188,17 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
             }
           },
           "response": []
@@ -235,24 +220,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -263,6 +230,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"WoTA Room B {{RUN_ID}}\",\n    \"description\": \"Hot desk zone\",\n    \"address\": \"254 Phayathai Road, Pathumwan, Bangkok 10330\",\n    \"tel\": \"02-218-6957\",\n    \"openCloseTimes\": \"00:00-24:00\"\n}",
@@ -271,15 +245,26 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Registers an admin and User 2 and creates Room A (08:00-20:00) and Room B (24 hours), so the steps below have data."
     },
     {
       "name": "1 User Registration + Validation Check (FR1, A1, A3)",
-      "description": "Step 1. A user registers with name, telephone number, email and a strong password; invalid data is rejected.",
       "item": [
         {
           "name": "Register User 1 (FR1)",
@@ -301,6 +286,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -308,6 +296,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Pu Tester\",\n    \"tel\": \"0822222222\",\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"passwordHint\": \"the first co-working space I booked\",\n    \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -319,18 +316,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Pu Tester\",\n    \"tel\": \"0822222222\",\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\",\n    \"passwordHint\": \"the first co-working space I booked\",\n    \"role\": \"user\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -357,6 +342,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -364,6 +352,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"No Tel\",\n    \"email\": \"notel{{RUN_ID}}@wota.test\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -375,18 +372,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"No Tel\",\n    \"email\": \"notel{{RUN_ID}}@wota.test\",\n    \"password\": \"{{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -413,6 +398,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -420,6 +408,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak0_{{RUN_ID}}@wota.test\",\n    \"password\": \"WOTA1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -431,18 +428,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak0_{{RUN_ID}}@wota.test\",\n    \"password\": \"WOTA1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -469,6 +454,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -476,6 +464,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak1_{{RUN_ID}}@wota.test\",\n    \"password\": \"wota1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -487,18 +484,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak1_{{RUN_ID}}@wota.test\",\n    \"password\": \"wota1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -525,6 +510,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -532,6 +520,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak2_{{RUN_ID}}@wota.test\",\n    \"password\": \"WotaWota\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -543,18 +540,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak2_{{RUN_ID}}@wota.test\",\n    \"password\": \"WotaWota\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -581,6 +566,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -588,6 +576,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak3_{{RUN_ID}}@wota.test\",\n    \"password\": \"Wo1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -599,18 +596,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Weak\",\n    \"tel\": \"0833333333\",\n    \"email\": \"weak3_{{RUN_ID}}@wota.test\",\n    \"password\": \"Wo1\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -637,6 +622,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -644,6 +632,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Again\",\n    \"tel\": \"0833333333\",\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -655,18 +652,6 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Again\",\n    \"tel\": \"0833333333\",\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -693,6 +678,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -700,6 +688,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Leaky Hint\",\n    \"tel\": \"0833333333\",\n    \"email\": \"hint{{RUN_ID}}@wota.test\",\n    \"password\": \"{{PASSWORD}}\",\n    \"passwordHint\": \"it is {{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/register",
               "host": [
@@ -711,48 +708,33 @@
                 "auth",
                 "register"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Leaky Hint\",\n    \"tel\": \"0833333333\",\n    \"email\": \"hint{{RUN_ID}}@wota.test\",\n    \"password\": \"{{PASSWORD}}\",\n    \"passwordHint\": \"it is {{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 1. A user registers with name, telephone number, email and a strong password; invalid data is rejected."
     },
     {
       "name": "2 User Log-in (FR2)",
-      "description": "Step 2. Log in with email and password.",
       "item": [
         {
-          "name": "Login User 1 (FR2)",
+          "name": "Login - NoSQL injection is blocked",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "const res = pm.response.json();",
-                  "pm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));",
-                  "pm.collectionVariables.set(\"USER1_TOKEN\", res.token);",
-                  "pm.collectionVariables.set(\"TOKEN\", res.token);"
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"No token is issued\", () => pm.expect(pm.response.json().token).to.be.undefined);"
                 ]
               }
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -760,6 +742,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": { \"$gt\": \"\" },\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
               "host": [
@@ -771,18 +762,6 @@
                 "auth",
                 "login"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -795,20 +774,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 401\", function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test(\"Response explains the error\", function () {",
-                  "    const res = pm.response.json();",
-                  "    pm.expect(res.success).to.eql(false);",
-                  "    pm.expect(res.message).to.be.a(\"string\");",
-                  "    pm.expect(res.message.toLowerCase()).to.include(\"invalid credentials\");",
-                  "});"
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response explains the error\", function () {\n    const res = pm.response.json();\n    pm.expect(res.success).to.eql(false);\n    pm.expect(res.message).to.be.a(\"string\");\n    pm.expect(res.message.toLowerCase()).to.include(\"invalid credentials\");\n});"
                 ]
               }
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -816,21 +790,6 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{URL}}/api/v1/auth/login",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "login"
-              ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"Wrong1234\"\n}",
@@ -839,34 +798,7 @@
                   "language": "json"
                 }
               }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login - NoSQL injection is blocked",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status code is 401\", function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test(\"No token is issued\", () => pm.expect(pm.response.json().token).to.be.undefined);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
               "host": [
@@ -878,18 +810,54 @@
                 "auth",
                 "login"
               ]
-            },
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User 1 (FR2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\nconst res = pm.response.json();\npm.test(\"Returns a token\", () => pm.expect(res.token).to.be.a(\"string\"));\npm.collectionVariables.set(\"USER1_TOKEN\", res.token);\npm.collectionVariables.set(\"TOKEN\", res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
             "auth": {
               "type": "noauth"
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": { \"$gt\": \"\" },\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             }
           },
           "response": []
@@ -916,6 +884,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -929,25 +907,15 @@
                 "auth",
                 "me"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 2. Log in with email and password."
     },
     {
       "name": "3 User View Product: co-working spaces (FR3, A4)",
-      "description": "Step 3. Everyone can list co-working spaces (name, address, telephone number, open-close time) and check free times.",
       "item": [
         {
           "name": "Get All Rooms (public)",
@@ -973,6 +941,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -985,9 +956,6 @@
                 "v1",
                 "rooms"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -1014,6 +982,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1040,9 +1011,6 @@
                   "value": "name"
                 }
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -1069,6 +1037,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1087,9 +1058,6 @@
                   "value": "x"
                 }
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -1111,6 +1079,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1124,9 +1095,6 @@
                 "rooms",
                 "{{ROOM_A_ID}}"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -1154,6 +1122,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1174,18 +1145,15 @@
                   "value": "{{TOMORROW}}"
                 }
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 3. Everyone can list co-working spaces (name, address, telephone number, open-close time) and check free times."
     },
     {
       "name": "4 User Create Booking + Check Create Condition (FR3, A4)",
-      "description": "Step 4. Reserve a free slot inside opening hours; overlapping, closed, past, reversed and 4th active bookings are rejected.",
       "item": [
         {
           "name": "User 1 reserves Room A tomorrow 09:00-10:00 (FR3)",
@@ -1206,6 +1174,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1213,6 +1191,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T09:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T10:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1225,25 +1212,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T09:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T10:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1265,6 +1233,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1272,6 +1250,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T10:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T11:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1284,25 +1271,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T10:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T11:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1330,6 +1298,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1337,6 +1315,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T09:30:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T10:30:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1349,25 +1336,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T09:30:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T10:30:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1394,6 +1362,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1401,6 +1379,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T06:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T07:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1413,25 +1400,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T06:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T07:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1458,6 +1426,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1465,6 +1443,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{YESTERDAY}}T10:00:00+07:00\",\n    \"endDate\": \"{{YESTERDAY}}T11:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1477,25 +1464,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{YESTERDAY}}T10:00:00+07:00\",\n    \"endDate\": \"{{YESTERDAY}}T11:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1522,6 +1490,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1529,6 +1507,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T15:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T14:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1541,25 +1528,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T15:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T14:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1593,6 +1561,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1600,6 +1578,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{SOON_START}}\",\n    \"endDate\": \"{{SOON_END}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_B_ID}}/reservations",
               "host": [
@@ -1612,25 +1599,6 @@
                 "{{ROOM_B_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{SOON_START}}\",\n    \"endDate\": \"{{SOON_END}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1657,6 +1625,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1664,6 +1642,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T14:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T15:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1676,25 +1663,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T14:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T15:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1716,6 +1684,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1723,6 +1701,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T12:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T13:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -1735,25 +1722,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T12:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T13:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -1779,6 +1747,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1799,18 +1770,15 @@
                   "value": "{{TOMORROW}}"
                 }
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 4. Reserve a free slot inside opening hours; overlapping, closed, past, reversed and 4th active bookings are rejected."
     },
     {
       "name": "5 User View Own Booking (FR4)",
-      "description": "Step 5. A user sees only their own reservations.",
       "item": [
         {
           "name": "User 1 views own reservations (FR4)",
@@ -1833,6 +1801,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1844,16 +1822,6 @@
                 "api",
                 "v1",
                 "reservations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -1876,6 +1844,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1889,16 +1867,6 @@
                 "rooms",
                 "{{ROOM_A_ID}}",
                 "reservations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -1921,6 +1889,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1933,16 +1911,6 @@
                 "v1",
                 "reservations",
                 "{{RES1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -1970,6 +1938,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1983,25 +1961,15 @@
                 "reservations",
                 "{{RES1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 5. A user sees only their own reservations."
     },
     {
       "name": "6 User Edit Own Booking (FR5, A4, A6)",
-      "description": "Step 6. Owners edit their reservation at least 1 hour before it begins.",
       "item": [
         {
           "name": "User 1 edits reservation 1 to 15:00-16:00 (FR5)",
@@ -2024,6 +1992,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -2031,6 +2009,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T15:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T16:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reservations/{{RES1_ID}}",
               "host": [
@@ -2042,25 +2029,6 @@
                 "reservations",
                 "{{RES1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T15:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T16:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -2087,6 +2055,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -2094,6 +2072,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T17:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reservations/{{RES1_ID}}",
               "host": [
@@ -2105,25 +2092,6 @@
                 "reservations",
                 "{{RES1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T17:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -2150,6 +2118,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -2157,6 +2135,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T12:30:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T13:30:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reservations/{{RES1_ID}}",
               "host": [
@@ -2168,25 +2155,6 @@
                 "reservations",
                 "{{RES1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T12:30:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T13:30:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -2213,6 +2181,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -2220,6 +2198,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"user\": \"{{USER2_ID}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reservations/{{RES1_ID}}",
               "host": [
@@ -2231,25 +2218,6 @@
                 "reservations",
                 "{{RES1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"user\": \"{{USER2_ID}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -2276,6 +2244,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -2283,6 +2261,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"endDate\": \"{{SOON_END}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reservations/{{RES3_ID}}",
               "host": [
@@ -2294,34 +2281,15 @@
                 "reservations",
                 "{{RES3_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"endDate\": \"{{SOON_END}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 6. Owners edit their reservation at least 1 hour before it begins."
     },
     {
       "name": "7 User Delete Own Booking (FR6, A7)",
-      "description": "Step 7. Owners delete their reservation at least 1 hour before it begins.",
       "item": [
         {
           "name": "User 1 cannot delete within 1 hour of the start (A7)",
@@ -2345,6 +2313,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -2357,16 +2335,6 @@
                 "v1",
                 "reservations",
                 "{{RES3_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -2388,6 +2356,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -2400,16 +2378,6 @@
                 "v1",
                 "reservations",
                 "{{RES2_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -2432,6 +2400,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2444,25 +2422,15 @@
                 "v1",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 7. Owners delete their reservation at least 1 hour before it begins."
     },
     {
       "name": "8 User Log-out (FR2)",
-      "description": "Step 8. Log out; the old token no longer reaches /auth/me.",
       "item": [
         {
           "name": "Logout (FR2)",
@@ -2481,6 +2449,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2493,16 +2471,6 @@
                 "v1",
                 "auth",
                 "logout"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -2530,6 +2498,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2543,25 +2521,15 @@
                 "auth",
                 "me"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 8. Log out; the old token no longer reaches /auth/me."
     },
     {
       "name": "9 Admin Log-in (FR2)",
-      "description": "Step 9. The admin logs in with email and password.",
       "item": [
         {
           "name": "Admin Log-in (FR2)",
@@ -2582,6 +2550,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -2589,6 +2560,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{ADMIN_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
               "host": [
@@ -2600,18 +2580,6 @@
                 "auth",
                 "login"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{ADMIN_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -2637,6 +2605,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2650,25 +2628,15 @@
                 "auth",
                 "me"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 9. The admin logs in with email and password."
     },
     {
       "name": "10 Admin View Any Booking (FR7)",
-      "description": "Step 10. Admins see every reservation.",
       "item": [
         {
           "name": "Admin views all reservations (FR7)",
@@ -2692,6 +2660,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2703,16 +2681,6 @@
                 "api",
                 "v1",
                 "reservations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -2735,6 +2703,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2749,25 +2727,15 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 10. Admins see every reservation."
     },
     {
       "name": "11 Admin Edit Any Booking (FR8)",
-      "description": "Step 11. Admins edit any reservation and are exempt from the 1-hour rule.",
       "item": [
         {
           "name": "Admin edits User 1's reservation (FR8) - moves it to yesterday",
@@ -2785,6 +2753,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -2792,6 +2770,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{YESTERDAY}}T10:00:00+07:00\",\n    \"endDate\": \"{{YESTERDAY}}T11:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reservations/{{RES3_ID}}",
               "host": [
@@ -2804,34 +2791,15 @@
                 "{{RES3_ID}}"
               ]
             },
-            "description": "Admins are exempt from the 1-hour rule; moving it into the past makes it a completed booking for A5.",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{YESTERDAY}}T10:00:00+07:00\",\n    \"endDate\": \"{{YESTERDAY}}T11:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
+            "description": "Admins are exempt from the 1-hour rule; moving it into the past makes it a completed booking for A5."
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 11. Admins edit any reservation and are exempt from the 1-hour rule."
     },
     {
       "name": "12 Admin Delete Any Booking (FR9)",
-      "description": "Step 12. Admins delete any reservation.",
       "item": [
         {
           "name": "Admin deletes User 2's reservation (FR9)",
@@ -2849,6 +2817,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -2861,16 +2839,6 @@
                 "v1",
                 "reservations",
                 "{{RES4_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -2898,6 +2866,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -2911,25 +2889,15 @@
                 "reservations",
                 "{{RES4_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Step 12. Admins delete any reservation."
     },
     {
       "name": "13 Extra credits A9 A11: suspend users",
-      "description": "Admins suspend users for some days or indefinitely; suspended users cannot reserve or review.",
       "item": [
         {
           "name": "Login User 1 again for the extra credit demo",
@@ -2950,6 +2918,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -2957,6 +2928,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
               "host": [
@@ -2968,18 +2948,6 @@
                 "auth",
                 "login"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3006,6 +2974,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3013,6 +2991,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"temporaryBan\",\n    \"banTime\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3024,25 +3011,6 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"temporaryBan\",\n    \"banTime\": 1\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3068,6 +3036,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3075,6 +3053,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"temporaryBan\",\n    \"banTime\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3086,25 +3073,6 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"temporaryBan\",\n    \"banTime\": 1\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3131,6 +3099,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3138,6 +3116,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T17:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T18:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -3150,25 +3137,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T17:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T18:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3195,6 +3163,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3202,6 +3180,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Should not be saved\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_B_ID}}/reviews",
               "host": [
@@ -3214,25 +3201,6 @@
                 "{{ROOM_B_ID}}",
                 "reviews"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Should not be saved\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3253,6 +3221,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -3264,16 +3242,6 @@
                 "api",
                 "v1",
                 "reservations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -3296,6 +3264,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3303,6 +3281,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3314,25 +3301,6 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"active\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3354,6 +3322,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3361,6 +3339,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T17:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T18:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -3373,25 +3360,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T17:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T18:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3417,6 +3385,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3424,6 +3402,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"permanentBan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3435,25 +3422,6 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"permanentBan\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3480,6 +3448,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3487,6 +3465,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T18:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T19:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/reservations",
               "host": [
@@ -3499,25 +3486,6 @@
                 "{{ROOM_A_ID}}",
                 "reservations"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reservationDate\": \"{{TOMORROW}}T18:00:00+07:00\",\n    \"endDate\": \"{{TOMORROW}}T19:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3544,6 +3512,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3551,6 +3529,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{ADMIN_ID}}\",\n    \"banType\": \"permanentBan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3562,25 +3549,6 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{ADMIN_ID}}\",\n    \"banType\": \"permanentBan\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3607,6 +3575,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3614,6 +3592,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"forever\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3625,25 +3612,6 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"forever\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3664,6 +3632,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3671,6 +3649,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/suspend",
               "host": [
@@ -3682,34 +3669,15 @@
                 "auth",
                 "suspend"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"id\": \"{{USER2_ID}}\",\n    \"banType\": \"active\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Admins suspend users for some days or indefinitely; suspended users cannot reserve or review."
     },
     {
       "name": "14 Extra credits A5 A10 A12 A13: reviews",
-      "description": "Reviews show the reviewer's past bookings; 1 review per room; anonymous reviews are opt-in and can be filtered out.",
       "item": [
         {
           "name": "User 1 reviews Room B (A5)",
@@ -3737,6 +3705,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3744,6 +3722,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Quiet, fast Wi-Fi and plenty of power plugs\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_B_ID}}/reviews",
               "host": [
@@ -3756,25 +3743,6 @@
                 "{{ROOM_B_ID}}",
                 "reviews"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Quiet, fast Wi-Fi and plenty of power plugs\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3801,6 +3769,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3808,6 +3786,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Second review\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_B_ID}}/reviews",
               "host": [
@@ -3820,25 +3807,6 @@
                 "{{ROOM_B_ID}}",
                 "reviews"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Second review\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3865,6 +3833,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -3872,6 +3850,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Good coffee nearby\",\n    \"anonymousReview\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_B_ID}}/reviews",
               "host": [
@@ -3884,25 +3871,6 @@
                 "{{ROOM_B_ID}}",
                 "reviews"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Good coffee nearby\",\n    \"anonymousReview\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -3932,6 +3900,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -3945,16 +3923,6 @@
                 "rooms",
                 "{{ROOM_B_ID}}",
                 "reviews"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -3981,6 +3949,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -3999,16 +3977,6 @@
                 {
                   "key": "excludeAnonymous",
                   "value": "true"
-                }
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
                 }
               ]
             }
@@ -4037,6 +4005,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -4044,6 +4022,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Hacked\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reviews/{{REVIEW1_ID}}",
               "host": [
@@ -4055,25 +4042,6 @@
                 "reviews",
                 "{{REVIEW1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Hacked\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4100,6 +4068,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -4107,6 +4085,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Edited by an admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reviews/{{REVIEW1_ID}}",
               "host": [
@@ -4118,25 +4105,6 @@
                 "reviews",
                 "{{REVIEW1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Edited by an admin\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4158,6 +4126,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -4165,6 +4143,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Quiet, fast Wi-Fi, plenty of power plugs and friendly staff\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/reviews/{{REVIEW1_ID}}",
               "host": [
@@ -4176,25 +4163,6 @@
                 "reviews",
                 "{{REVIEW1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Quiet, fast Wi-Fi, plenty of power plugs and friendly staff\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4215,6 +4183,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -4227,16 +4205,6 @@
                 "v1",
                 "reviews",
                 "{{REVIEW1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -4258,6 +4226,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -4265,6 +4243,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reviewData\": \"Still my favourite hot desk\",\n    \"anonymousReview\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_B_ID}}/reviews",
               "host": [
@@ -4277,25 +4264,6 @@
                 "{{ROOM_B_ID}}",
                 "reviews"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"reviewData\": \"Still my favourite hot desk\",\n    \"anonymousReview\": false\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4316,6 +4284,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -4328,16 +4306,6 @@
                 "v1",
                 "reviews",
                 "{{REVIEW2_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -4365,6 +4333,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -4378,25 +4356,15 @@
                 "reviews",
                 "{{REVIEW2_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Reviews show the reviewer's past bookings; 1 review per room; anonymous reviews are opt-in and can be filtered out."
     },
     {
       "name": "15 Extra credits A8: personal notes",
-      "description": "Each user keeps a private note on each room; nobody else can read it, admins included.",
       "item": [
         {
           "name": "User 1 adds a note to Room A (A8)",
@@ -4415,6 +4383,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -4422,6 +4400,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"noteData\": \"Sit by the window, the plug under the desk works\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/notes",
               "host": [
@@ -4434,25 +4421,6 @@
                 "{{ROOM_A_ID}}",
                 "notes"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"noteData\": \"Sit by the window, the plug under the desk works\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4479,6 +4447,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -4486,6 +4464,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"noteData\": \"Another note\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}/notes",
               "host": [
@@ -4498,25 +4485,6 @@
                 "{{ROOM_A_ID}}",
                 "notes"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"noteData\": \"Another note\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4538,6 +4506,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -4549,16 +4527,6 @@
                 "api",
                 "v1",
                 "notes"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -4586,6 +4554,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -4598,16 +4576,6 @@
                 "v1",
                 "notes",
                 "{{NOTE1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -4635,6 +4603,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -4647,16 +4625,6 @@
                 "v1",
                 "notes",
                 "{{NOTE1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -4679,6 +4647,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -4692,16 +4670,6 @@
                 "rooms",
                 "{{ROOM_A_ID}}",
                 "notes"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -4724,6 +4692,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -4737,9 +4708,6 @@
                 "rooms",
                 "{{ROOM_A_ID}}"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -4761,6 +4729,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -4768,6 +4746,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"noteData\": \"Book the window seat before 10:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/notes/{{NOTE1_ID}}",
               "host": [
@@ -4779,25 +4766,6 @@
                 "notes",
                 "{{NOTE1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"noteData\": \"Book the window seat before 10:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4818,6 +4786,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -4831,25 +4809,15 @@
                 "notes",
                 "{{NOTE1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Each user keeps a private note on each room; nobody else can read it, admins included."
     },
     {
       "name": "16 Extra credits A1 A2 A3: password",
-      "description": "Password hint, and changing the password with the old one.",
       "item": [
         {
           "name": "Get password hint by email (A3)",
@@ -4868,6 +4836,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -4875,6 +4846,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/passwordhint",
               "host": [
@@ -4886,18 +4866,6 @@
                 "auth",
                 "passwordhint"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4924,6 +4892,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -4931,6 +4902,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"nobody{{RUN_ID}}@wota.test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/passwordhint",
               "host": [
@@ -4942,18 +4922,6 @@
                 "auth",
                 "passwordhint"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"nobody{{RUN_ID}}@wota.test\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -4980,6 +4948,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -4987,6 +4965,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"{{PASSWORD}}\",\n    \"newPassword\": \"weakpassword\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/changePassword",
               "host": [
@@ -4998,25 +4985,6 @@
                 "auth",
                 "changePassword"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"oldPassword\": \"{{PASSWORD}}\",\n    \"newPassword\": \"weakpassword\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5043,6 +5011,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -5050,6 +5028,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"Wrong1234\",\n    \"newPassword\": \"{{NEW_PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/changePassword",
               "host": [
@@ -5061,25 +5048,6 @@
                 "auth",
                 "changePassword"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"oldPassword\": \"Wrong1234\",\n    \"newPassword\": \"{{NEW_PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5101,6 +5069,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -5108,6 +5086,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"{{PASSWORD}}\",\n    \"newPassword\": \"{{NEW_PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/changePassword",
               "host": [
@@ -5119,25 +5106,6 @@
                 "auth",
                 "changePassword"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"oldPassword\": \"{{PASSWORD}}\",\n    \"newPassword\": \"{{NEW_PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5158,6 +5126,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -5165,6 +5136,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{NEW_PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
               "host": [
@@ -5176,18 +5156,6 @@
                 "auth",
                 "login"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{NEW_PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5214,6 +5182,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -5221,6 +5192,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
               "host": [
@@ -5232,18 +5212,6 @@
                 "auth",
                 "login"
               ]
-            },
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{USER1_EMAIL}}\",\n    \"password\": \"{{PASSWORD}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5265,6 +5233,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -5272,6 +5250,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password\": \"{{NEW_PASSWORD}}\",\n    \"passwordHint\": \"the room with the window seat\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/auth/passwordhint",
               "host": [
@@ -5283,34 +5270,15 @@
                 "auth",
                 "passwordhint"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"password\": \"{{NEW_PASSWORD}}\",\n    \"passwordHint\": \"the room with the window seat\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Password hint, and changing the password with the old one."
     },
     {
       "name": "17 Admin manages co-working spaces",
-      "description": "Only admins create and update co-working spaces; invalid data is rejected.",
       "item": [
         {
           "name": "Create Room - user is forbidden",
@@ -5334,24 +5302,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -5362,6 +5312,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Not allowed {{RUN_ID}}\",\n    \"description\": \"x\",\n    \"address\": \"x\",\n    \"tel\": \"0811111111\",\n    \"openCloseTimes\": \"08:00-20:00\"\n}",
@@ -5370,6 +5327,17 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
             }
           },
           "response": []
@@ -5396,24 +5364,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -5424,6 +5374,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Bad hours {{RUN_ID}}\",\n    \"description\": \"x\",\n    \"address\": \"x\",\n    \"tel\": \"0811111111\",\n    \"openCloseTimes\": \"8am-5pm\"\n}",
@@ -5432,6 +5389,17 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
             }
           },
           "response": []
@@ -5458,24 +5426,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/rooms",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "rooms"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -5486,6 +5436,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Missing {{RUN_ID}}\"\n}",
@@ -5494,6 +5451,17 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/rooms",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms"
+              ]
             }
           },
           "response": []
@@ -5515,6 +5483,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -5522,6 +5500,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tel\": \"02-218-6999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/rooms/{{ROOM_A_ID}}",
               "host": [
@@ -5533,34 +5520,15 @@
                 "rooms",
                 "{{ROOM_A_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"tel\": \"02-218-6999\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Only admins create and update co-working spaces; invalid data is rejected."
     },
     {
       "name": "18 VacQ APIs kept from Assignment 7 (hospitals and appointments)",
-      "description": "The original VacQ endpoints still work exactly as in Assignment 7.",
       "item": [
         {
           "name": "Get All Hospitals",
@@ -5579,6 +5547,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -5591,9 +5562,6 @@
                 "v1",
                 "hospitals"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -5626,24 +5594,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/hospitals",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "hospitals"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -5654,6 +5604,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"{{HOSPITAL_NAME}}\",\n    \"address\": \"Changwattana Pakkret\",\n    \"district\": \"Pakkret\",\n    \"province\": \"ขอนแก่น\",\n    \"postalcode\": \"10110\",\n    \"tel\": \"02-8369999\",\n    \"region\": \"กรุงเทพมหานคร (Bangkok)\"\n}",
@@ -5662,6 +5619,17 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals"
+              ]
             }
           },
           "response": []
@@ -5688,24 +5656,6 @@
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{URL}}/api/v1/hospitals",
-              "host": [
-                "{{URL}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "hospitals"
-              ]
-            },
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -5716,6 +5666,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Not allowed {{RUN_ID}}\",\n    \"address\": \"x\",\n    \"district\": \"x\",\n    \"province\": \"x\",\n    \"postalcode\": \"10110\",\n    \"region\": \"x\"\n}",
@@ -5724,6 +5681,17 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/hospitals",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hospitals"
+              ]
             }
           },
           "response": []
@@ -5750,6 +5718,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -5776,9 +5747,6 @@
                   "value": "name"
                 }
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -5800,6 +5768,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -5813,9 +5784,6 @@
                 "hospitals",
                 "{{HOSPITAL_ID}}"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -5837,6 +5805,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -5844,6 +5822,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"World Medical {{RUN_ID}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}",
               "host": [
@@ -5855,25 +5842,6 @@
                 "hospitals",
                 "{{HOSPITAL_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"World Medical {{RUN_ID}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5897,6 +5865,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -5904,6 +5882,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T10:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
               "host": [
@@ -5916,25 +5903,6 @@
                 "{{HOSPITAL_ID}}",
                 "appointments"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T10:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -5956,6 +5924,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -5963,6 +5941,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T11:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
               "host": [
@@ -5975,25 +5962,6 @@
                 "{{HOSPITAL_ID}}",
                 "appointments"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T11:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -6015,6 +5983,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -6022,6 +6000,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T12:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
               "host": [
@@ -6034,25 +6021,6 @@
                 "{{HOSPITAL_ID}}",
                 "appointments"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T12:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -6079,6 +6047,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -6086,6 +6064,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T13:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/hospitals/{{HOSPITAL_ID}}/appointments",
               "host": [
@@ -6098,25 +6085,6 @@
                 "{{HOSPITAL_ID}}",
                 "appointments"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T13:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -6142,6 +6110,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6153,16 +6131,6 @@
                 "api",
                 "v1",
                 "appointments"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6185,6 +6153,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6198,16 +6176,6 @@
                 "hospitals",
                 "{{HOSPITAL_ID}}",
                 "appointments"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6230,6 +6198,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6242,16 +6220,6 @@
                 "v1",
                 "appointments",
                 "{{APPT1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6279,6 +6247,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6291,16 +6269,6 @@
                 "v1",
                 "appointments",
                 "{{APPT1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6326,6 +6294,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -6333,6 +6311,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T15:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
               "host": [
@@ -6344,25 +6331,6 @@
                 "appointments",
                 "{{APPT1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"apptDate\": \"{{TOMORROW}}T15:00:00+07:00\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -6389,6 +6357,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -6396,6 +6374,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"hospital\": \"000000000000000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{URL}}/api/v1/appointments/{{APPT1_ID}}",
               "host": [
@@ -6407,25 +6394,6 @@
                 "appointments",
                 "{{APPT1_ID}}"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"hospital\": \"000000000000000000000000\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -6446,6 +6414,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER2_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -6458,16 +6436,6 @@
                 "v1",
                 "appointments",
                 "{{APPT1_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER2_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6489,6 +6457,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -6501,16 +6479,6 @@
                 "v1",
                 "hospitals",
                 "{{HOSPITAL_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6533,6 +6501,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6546,16 +6524,6 @@
                 "hospitals",
                 "{{HOSPITAL_ID}}",
                 "appointments"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6583,6 +6551,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6596,18 +6567,15 @@
                 "hospitals",
                 "{{HOSPITAL_ID}}"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "The original VacQ endpoints still work exactly as in Assignment 7."
     },
     {
       "name": "19 Cleanup (cascade delete)",
-      "description": "Admins delete the rooms of this run; their reservations, reviews and notes go with them.",
       "item": [
         {
           "name": "User cannot delete a room",
@@ -6631,6 +6599,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{USER1_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -6643,16 +6621,6 @@
                 "v1",
                 "rooms",
                 "{{ROOM_A_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{USER1_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6674,6 +6642,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -6686,16 +6664,6 @@
                 "v1",
                 "rooms",
                 "{{ROOM_A_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6721,6 +6689,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6732,16 +6710,6 @@
                 "api",
                 "v1",
                 "reservations"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6769,6 +6737,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6782,9 +6753,6 @@
                 "rooms",
                 "{{ROOM_A_ID}}"
               ]
-            },
-            "auth": {
-              "type": "noauth"
             }
           },
           "response": []
@@ -6805,6 +6773,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": {
@@ -6817,16 +6795,6 @@
                 "v1",
                 "rooms",
                 "{{ROOM_B_ID}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
               ]
             }
           },
@@ -6853,6 +6821,16 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ADMIN_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -6865,21 +6843,28 @@
                 "v1",
                 "reviews"
               ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ADMIN_TOKEN}}",
-                  "type": "string"
-                }
-              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Admins delete the rooms of this run; their reservations, reviews and notes go with them."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Dates in the co-working spaces' time zone (UTC+07:00), recomputed before every request",
+          "const OFFSET_MINUTES = 7 * 60;",
+          "const localNow = new Date(Date.now() + OFFSET_MINUTES * 60000);",
+          "const day = (n) => new Date(localNow.getTime() + n * 86400000).toISOString().slice(0, 10);",
+          "pm.collectionVariables.set(\"TOMORROW\", day(1));",
+          "pm.collectionVariables.set(\"YESTERDAY\", day(-1));"
+        ]
+      }
     }
   ],
   "variable": [
